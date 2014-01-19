@@ -1,0 +1,20 @@
+{
+  "manifest_version": 2,
+
+  "name": "Grooveshark Broadcast Bot",
+  "short_name": "GS Bot",
+  "description": "Create or takeover a broadcast with this bot, then enjoy what the bot can offers!",
+  "version": "1.2.1",
+  "icons": { "16": "icon16.png",
+			"48": "icon48.png",
+			"128": "icon128.png" },
+  
+  "options_page": "options.html",
+
+  "permissions": ["alarms", "tabs", "http://grooveshark.com/*"],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "web_accessible_resources": ["content_script.js"]
+}
