@@ -1,0 +1,104 @@
+{
+  "name": "gs_bot",
+  "title": "Grooveshark Broadcast Bot",
+  "id": "jid1-uttjxbSt8d9njQ",
+  "description": "Create or takeover a broadcast with this bot, then enjoy what the bot can offer!",
+  "author": "Ulysse Manceron",
+  "license": "MIT",
+  "version": "1.2.3",
+  
+  "preferences":
+  [
+    {
+      "name": "separator",
+      "title": "separator",
+      "description": "This string will be insered between each songs, when doing /songPreview.",
+      "type": "string",
+      "value": " --- "
+    },
+    {
+      "name": "prefixRename",
+      "title": "prefixRename",
+      "description": "Will try to find this string in the description of the broadcast, and write \" {GS Bot} X songs left.\" after it. If there is no match, it will remove the entire description, so be careful",
+      "type": "string",
+      "value": "Broadcaster:"
+    },
+    {
+      "name": "welcomeMessage",
+      "title": "welcomeMessage",
+      "description": "Place this in chat after the activation.",
+      "type": "string",
+      "value": "Server mode enabled. Let's take over the world!"
+    },
+    {
+      "name": "defaultSongPreview",
+      "title": "defaultSongPreview",
+      "description": "The number of songs that will be displayed on /songPreview.",
+      "type": "string",
+      "value": "10"
+    },
+    {
+      "name": "maxSongPreview",
+      "title": "maxSongPreview",
+      "description": "",
+      "type": "string",
+      "value": ""
+    },
+    {
+      "name": "maxSongPreview",
+      "title": "maxSongPreview",
+      "description": "Since a user can do \"/songPreview X\" to preview X songs, we need a limit, it is defined here.",
+      "type": "string",
+      "value": "25"
+    },
+    {
+      "name": "closeAllTabsOnStartup",
+      "title": "closeAllTabsOnStartup",
+      "description": "If this is checked, all grooveshark tabs will be close upon activation of the bot.",
+      "type": "bool",
+      "value": true
+    },
+    {
+      "name": "forceLoginUsername",
+      "title": "forceLoginUsername",
+      "description": "If this field is filled, the bot will try to login with this username. This is overriden by starting the bot with http://broadcast/MY_USERNAME/MY_PASSWORD . If this is blank, grooveshark will use the bot will use the current sessnion.",
+      "type": "string",
+      "value": ""
+    },
+    {
+      "name": "forceLoginPassword",
+      "title": "forceLoginPassword",
+      "description": "Same as forceLoginUsername, only this is the password.",
+      "type": "string",
+      "value": ""
+    },
+    {
+      "name": "whitelist",
+      "title": "whitelist",
+      "description": "The ID of the grooveshark users that can /guest. Separate each ID with a comma.",
+      "type": "string",
+      "value": ""
+    },
+    {
+      "name": "whitelistIncludesFollowing",
+      "title": "whitelistIncludesFollowing",
+      "description": "If checked, all the people you follow will have the ability to /guest.",
+      "type": "bool",
+      "value": true
+    },
+    {
+      "name": "blacklist",
+      "title": "blacklist",
+      "description": "The ID of the grooveshark user in this list will not be able to /guest, even if they are being followed by you, and if you checked whitelistIncludesFollowing. Separate each ID with a comma.",
+      "type": "string",
+      "value": ""
+    },
+    {
+      "name": "whiteListName",
+      "title": "whiteListName",
+      "description": "The rank of person in the whitelist, used when non whitelist people try to guest \"Only [this name] can use that feature, sorry!\"",
+      "type": "string",
+      "value": "broadcaster"
+    }
+  ]
+}
