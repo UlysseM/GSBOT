@@ -5,6 +5,8 @@ Create or takeover a broadcast with this bot, then enjoy what the bot can offers
 
 The Grooveshark Broadcast Bot (GS Bot) is designed to let you run a collaborative broadcast, or can handle yout broadcast when you are AFK. It can be easily hosted on a dedicated server.
 
+If you want to run the GS Bot on your broadcast, you might want to get the already packaged and self-updating chrome extension, available here: https://chrome.google.com/webstore/detail/grooveshark-broadcast-bot/dgfmdpmfofhkbjkjbkmjelamngnbofmd
+
 
 Featuring
 ---------
