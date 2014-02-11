@@ -365,6 +365,11 @@ var GU = {
     },
  'startBroadcasting': function()
     {
+        if (!GS.isBroadcaster()) {
+            GS.Services.SWF.startBroadcast();
+            setTimeout(GU.startBroadcasting, 3000);
+            return;
+        }
         GU.renameBroadcast();
         setTimeout(function() {
             GU.sendMsg(GUParams.welcomeMessage);
@@ -391,7 +396,7 @@ var GU = {
                     $('#lightbox-close').click();
                 }
                 GS.Services.SWF.resumeBroadcast(a.BroadcastID);
-                setTimeout(GU.startBroadcasting, 2000);
+                setTimeout(GU.startBroadcasting, 3000);
             });
         }
     }
