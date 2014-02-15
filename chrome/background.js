@@ -40,7 +40,7 @@
 var callbackFunction = function(tabId, changeInfo, tab) {
 	var newUrl = changeInfo.url;
 	var usernameRegex = '[a-zA-Z0-9_-]+';
-	var regexRes = RegExp("http://broadcast(/(" + usernameRegex + ")(/(.*)$)?)?").exec(newUrl);
+	var regexRes = RegExp("http://broadcast(-nologin)?(/(" + usernameRegex + ")(/(.*)$)?)?").exec(newUrl);
 	if (changeInfo.status == 'loading' && regexRes != null)
 	{
 		if (localStorage.closeAllTabsOnStartup == 'true')
@@ -52,8 +52,8 @@ var callbackFunction = function(tabId, changeInfo, tab) {
 			var injection = 'document.body.appendChild(document.createElement(\'script\')).innerHTML='
 			+ JSON.stringify(
 				'var GUParams = JSON.parse(' + JSON.stringify(JSON.stringify(localStorage)) + ');'
-				+ 'GUParams.userReq = ' + JSON.stringify(regexRes[2] != undefined ? regexRes[2] : localStorage.forceLoginUsername) + ';'
-				+ 'GUParams.passReq = ' + JSON.stringify(regexRes[4] != undefined ? regexRes[4] : localStorage.forceLoginPassword) + ';'
+				+ 'GUParams.userReq = ' + JSON.stringify(regexRes[1] != undefined ? '' : (regexRes[3] != undefined ? regexRes[3] : localStorage.forceLoginUsername)) + ';'
+				+ 'GUParams.passReq = ' + JSON.stringify(regexRes[1] != undefined ? '' : (regexRes[5] != undefined ? regexRes[5] : localStorage.forceLoginPassword)) + ';'
 				+ 'GUParams.version = ' + JSON.stringify(chrome.app.getDetails().version) + ';'
 				) + ';'
 			+ "document.body.appendChild(document.createElement('script')).src='"

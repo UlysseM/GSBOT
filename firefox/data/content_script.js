@@ -363,11 +363,12 @@ var GU = {
         helpMsg = helpMsg + '. Type /help [command name] for in depth help.';
         GU.sendMsg(helpMsg);
     },
- 'startBroadcasting': function()
+ 'startBroadcasting': function(bc)
     {
+		var properties = { 'Description': bc.Description, 'Name': bc.Name, 'Tag': bc.Tag };
         if (!GS.isBroadcaster()) {
-            GS.Services.SWF.startBroadcast();
-            setTimeout(GU.startBroadcasting, 3000);
+            GS.Services.SWF.startBroadcast(properties);
+            setTimeout(GU.startBroadcasting, 3000, bc);
             return;
         }
         GU.renameBroadcast();
@@ -386,17 +387,17 @@ var GU = {
     },
  'broadcast': function()
     {
-        if (GS.getLoggedInUserID() == -1)
+        if (GS.getLoggedInUserID() <= 0)
             alert('Cannot login!');
         else
         {
-            GS.Services.API.getUserLastBroadcast().then(function(a) {
+            GS.Services.API.getUserLastBroadcast().then(function(bc) {
                 if ($('#lightbox-close').length == 1)
                 {
                     $('#lightbox-close').click();
                 }
-                GS.Services.SWF.resumeBroadcast(a.BroadcastID);
-                setTimeout(GU.startBroadcasting, 3000);
+                GS.Services.SWF.resumeBroadcast(bc.BroadcastID);
+                setTimeout(GU.startBroadcasting, 3000, bc);
             });
         }
     }
@@ -413,25 +414,16 @@ actionTable = {
     'playPlaylist':        [[GU.inBroadcast, GU.guestCheck],     GU.playPlaylist,        'PLAYLISTID - Play the playlist from the ID given by \'showPlaylist\'.'],
     'skip':                [[GU.inBroadcast, GU.guestCheck],     GU.skip,                '- Skip the current song.'],
     'shuffle':             [[GU.inBroadcast, GU.guestCheck],     GU.shuffle,             '- Shuffle the current queue.'],
-    'songPreview':         [[GU.inBroadcast, GU.whiteListCheck], GU.previewSongs,        '[NUMBER] - Preview the songs that are in the queue.'],
+    'peek':                [[GU.inBroadcast, GU.whiteListCheck], GU.previewSongs,        '[NUMBER] - Preview the songs that are in the queue.'],
     'guest':               [[GU.inBroadcast, GU.whiteListCheck], GU.guest,               '- Toogle your guest status.'],
     'about':               [[GU.inBroadcast],                    GU.about,               '- About this software.']
 };
 
 if (GUParams.userReq != '' && GUParams.passReq != '')
 {
-    // Forcing LOGOUT
-    $('#profile-button').mouseover();
-    $('.tooltip').find('.menu-item').last().click();
-    setTimeout(function() {
-        $('#header-login-btn').click();
-        setTimeout(function() {
-            $('#login-username').val(GUParams.userReq);
-            $('#login-password').val(GUParams.passReq);
-            $('.submit').click();
-            setTimeout(GU.broadcast, 1000);
-        }, 250);
-    }, 250);
+    GS.Services.API.logoutUser().then(function(){
+        GS.Services.API.authenticateUser(GUParams.userReq, GUParams.passReq).then(function(user) { document.body.innerHTML = ''; setTimeout(function(){window.location = "http://broadcast-nologin/";}, 200); } );
+    });
 }
 else
     GU.broadcast();
