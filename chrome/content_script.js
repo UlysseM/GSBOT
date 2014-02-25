@@ -25,6 +25,7 @@
  
 var songleft;
 var allSongsId = [];
+var lastPlayedSongs = [];
 var actionTable = {};
 var lastPlay;
 var forcePlay = false;
@@ -151,7 +152,21 @@ var GU = {
         playingRandom = true;
         var nextSong = allSongsId[Math.floor(Math.random() * allSongsId.length)];
         if (nextSong != undefined)
+        {
+            var nextSongIndex = lastPlayedSongs.indexOf(nextSong);
+            var maxTry = 5;
+            while (nextSongIndex != -1 && maxTry-- > 0)
+            {
+                var tmpSong = allSongsId[Math.floor(Math.random() * allSongsId.length)];
+                if (tmpSong != undefined)
+                {
+                    var tmpIndex = lastPlayedSongs.indexOf(tmpSong);
+                    if (tmpIndex < nextSongIndex)
+                        nextSong = tmpSong;
+                }
+            }
             Grooveshark.addSongsByID([nextSong]);
+        }
     },
  'skip': function()
     {
@@ -309,6 +324,23 @@ var GU = {
             lastPlay = new Date();
         }
     },
+ 'addSongToHistory': function()
+    {
+        if (Grooveshark.getCurrentSongStatus().song == null)
+            return;
+        var currSongID = Grooveshark.getCurrentSongStatus().song.songID;
+        if (lastPlayedSongs.length == 0 || lastPlayedSongs[lastPlayedSongs.length - 1] != currSongID)
+        {
+            var posToRemove = lastPlayedSongs.indexOf(currSongID);
+            // Remove the song in the list
+            if (posToRemove != -1)
+                lastPlayedSongs.splice(posToRemove, 1);
+            lastPlayedSongs.push(currSongID);
+            // Remove the oldest song in the list if it goes over the limit.
+            if (GUParams.historyLength < lastPlayedSongs.length)
+                lastPlayedSongs.shift();
+        }
+    },
  'callback': function()
     {
         if (songleft != GU.songInQueue())
@@ -318,6 +350,7 @@ var GU = {
                 playingRandom = false;
             GU.renameBroadcast();
         }
+        GU.addSongToHistory();
         if (songleft < 1)
             GU.playRandomSong();
         GU.parseMessages();
@@ -365,7 +398,7 @@ var GU = {
     },
  'startBroadcasting': function(bc)
     {
-		var properties = { 'Description': bc.Description, 'Name': bc.Name, 'Tag': bc.Tag };
+        var properties = { 'Description': bc.Description, 'Name': bc.Name, 'Tag': bc.Tag };
         if (!GS.isBroadcaster()) {
             GS.Services.SWF.startBroadcast(properties);
             setTimeout(GU.startBroadcasting, 3000, bc);
