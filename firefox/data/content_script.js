@@ -379,6 +379,14 @@ var GU = {
         // Check if there are msg in the chat, and process them.
         setInterval(GU.callback, 1000);
     },
+ 'getVotes': function()
+    {
+    	var upvotes = GS.getCurrentBroadcast().attributes.activeSong.attributes.upVotes.length;
+    	var downvotes = GS.getCurrentBroadcast().attributes.activeSong.attributes.downVotes.length;
+    	if (downvotes != "0")
+    	    downvotes = "-"+downvotes;
+    	GU.sendMsg(upvotes+" / "+downvotes);
+    }
  'broadcast': function()
     {
         if (GS.getLoggedInUserID() == -1)
@@ -409,7 +417,8 @@ actionTable = {
     'skip':                [[GU.inBroadcast, GU.guestCheck],     GU.skip,                '- Skip the current song.'],
     'shuffle':             [[GU.inBroadcast, GU.guestCheck],     GU.shuffle,             '- Shuffle the current queue.'],
     'songPreview':         [[GU.inBroadcast, GU.whiteListCheck], GU.previewSongs,        '[NUMBER] - Preview the songs that are in the queue.'],
-    'guest':               [[GU.inBroadcast, GU.whiteListCheck], GU.guest,               '- Toogle your guest status.'],
+    'guest':               [[GU.inBroadcast, GU.whiteListCheck], GU.guest,               '- Toggle your guest status.'],
+    'getVotes':            [[GU.inBroadcast, GU.whiteListCheck], GU.guest,               '- Get the up/down votes on the current song'],
     'about':               [[GU.inBroadcast],                    GU.about,               '- About this software.']
 };
 
