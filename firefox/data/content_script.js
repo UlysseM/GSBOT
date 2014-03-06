@@ -434,6 +434,10 @@ var GU = {
             });
         }
     }
+ 'addToCollection': function()
+    {
+       Grooveshark.addCurrentSongToLibrary();
+    }
 };
 
 actionTable = {
@@ -447,6 +451,7 @@ actionTable = {
     'playPlaylist':        [[GU.inBroadcast, GU.guestCheck],     GU.playPlaylist,        'PLAYLISTID - Play the playlist from the ID given by \'showPlaylist\'.'],
     'skip':                [[GU.inBroadcast, GU.guestCheck],     GU.skip,                '- Skip the current song.'],
     'shuffle':             [[GU.inBroadcast, GU.guestCheck],     GU.shuffle,             '- Shuffle the current queue.'],
+    'addToCollection':     [[GU.inBroadcast, GU.guestCheck],     GU.addToCollection,     '- Add the current song to the collection'],
     'peek':                [[GU.inBroadcast, GU.whiteListCheck], GU.previewSongs,        '[NUMBER] - Preview the songs that are in the queue.'],
     'guest':               [[GU.inBroadcast, GU.whiteListCheck], GU.guest,               '- Toogle your guest status.'],
     'about':               [[GU.inBroadcast],                    GU.about,               '- About this software.']
