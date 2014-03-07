@@ -433,6 +433,16 @@ var GU = {
                 setTimeout(GU.startBroadcasting, 3000, bc);
             });
         }
+    },
+ 'rules': function()
+   	{
+        var rules = GUParams.rules.split(',');
+        for (i=0;i<rules.length;i++)
+        {
+            if(rules[i]!="")
+            				GU.sendMsg(rules[i]);
+        }
+
     }
 };
 
@@ -449,7 +459,8 @@ actionTable = {
     'shuffle':             [[GU.inBroadcast, GU.guestCheck],     GU.shuffle,             '- Shuffle the current queue.'],
     'peek':                [[GU.inBroadcast, GU.whiteListCheck], GU.previewSongs,        '[NUMBER] - Preview the songs that are in the queue.'],
     'guest':               [[GU.inBroadcast, GU.whiteListCheck], GU.guest,               '- Toogle your guest status.'],
-    'about':               [[GU.inBroadcast],                    GU.about,               '- About this software.']
+    'about':               [[GU.inBroadcast],                    GU.about,               '- About this software.'],
+    'rules':               [[GU.inBroadcast],                    GU.rules,               '- Rules of the broadcast']
 };
 
 if (GUParams.userReq != '' && GUParams.passReq != '')
