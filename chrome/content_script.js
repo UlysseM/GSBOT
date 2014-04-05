@@ -172,6 +172,18 @@ var GU = {
     {
         Grooveshark.removeCurrentSongFromQueue();
     },
+ 'addToCollection': function()
+    {
+        Grooveshark.addCurrentSongToLibrary();
+        GU.sendMsg('Song added to the favorite.');
+    },
+ 'removeFromCollection': function()
+    {
+        var currSong = Grooveshark.getCurrentSongStatus().song
+        GS.Services.API.userRemoveSongsFromLibrary(GS.getLoggedInUserID(), currSong.songID, currSong.albumID, currSong.artistID).then(function(){
+            GU.sendMsg('Song removed from the favorite.');
+        });
+    },
  'deletePlayedSong': function()
     {
         var previousSong;
@@ -201,7 +213,7 @@ var GU = {
             GS.Services.SWF.removeSongs([id]);
         }
     },
- 'getRemoveSongsList': function(stringFilter)
+ 'getMatchedSongsList': function(stringFilter)
     {
         var regex = RegExp(stringFilter, 'i');
         var songs = GU.getPlaylistNextSongs();
@@ -216,7 +228,7 @@ var GU = {
     },
  'previewRemoveByName': function(message, stringFilter)
     {
-        var listToRemove = GU.getRemoveSongsList(stringFilter);
+        var listToRemove = GU.getMatchedSongsList(stringFilter);
         if (listToRemove.length > 10 || listToRemove.length == 0)
             GU.sendMsg('' + listToRemove.length + 'Songs matched.');
         else
@@ -230,13 +242,19 @@ var GU = {
     },
  'removeByName': function(message, stringFilter)
     {
-        var listToRemove = GU.getRemoveSongsList(stringFilter);
+        var listToRemove = GU.getMatchedSongsList(stringFilter);
         var idToRemove = [];
         listToRemove.forEach(function (element){
             idToRemove.push(element.queueSongID);
         });
         GS.Services.SWF.removeSongs(idToRemove);
         GU.sendMsg('Removed ' + idToRemove.length + ' songs.');
+    },
+ 'fetchByName': function(message, stringFilter)
+    {
+        var songToPlay = GU.getMatchedSongsList(stringFilter);
+        if (songToPlay.length > 0)
+            GS.Services.SWF.moveSongsTo([songToPlay[0].queueSongID], 1, true);
     },
  'shuffle': function()
     {
@@ -260,6 +278,13 @@ var GU = {
  'followerCheck': function(current)
     {
         return (current.find('a.favorite').hasClass('btn-success'));
+    },
+ 'strictWhiteListCheck': function(current)
+    {
+        if (GU.inListCheck(current, GUParams.whitelist))
+            return true;
+        GU.sendMsg('Only user that are explicitly in the whitelist can use this feature, sorry!');
+        return false;
     },
  'whiteListCheck': function(current)
     {
@@ -399,7 +424,7 @@ var GU = {
  'startBroadcasting': function(bc)
     {
         var properties = { 'Description': bc.Description, 'Name': bc.Name, 'Tag': bc.Tag };
-        if (!GS.isBroadcaster()) {
+        if (GS.getCurrentBroadcast() === false) {
             GS.Services.SWF.startBroadcast(properties);
             setTimeout(GU.startBroadcasting, 3000, bc);
             return;
@@ -414,6 +439,10 @@ var GU = {
         GS.Services.API.userGetSongIDsInLibrary().then(function (result){
             allSongsId = result.SongIDs;
         });
+        if ($('#lightbox-close').length == 1)
+        {
+            $('#lightbox-close').click();
+        }
         lastPlay = new Date();
         // Check if there are msg in the chat, and process them.
         setInterval(GU.callback, 1000);
@@ -425,38 +454,56 @@ var GU = {
         else
         {
             GS.Services.API.getUserLastBroadcast().then(function(bc) {
-                if ($('#lightbox-close').length == 1)
+                GS.Services.SWF.ready.then(function()
                 {
-                    $('#lightbox-close').click();
-                }
-                GS.Services.SWF.resumeBroadcast(bc.BroadcastID);
-                setTimeout(GU.startBroadcasting, 3000, bc);
+                    GS.Services.SWF.resumeBroadcast(bc.BroadcastID);
+                    setTimeout(GU.startBroadcasting, 3000, bc);
+                });
             });
         }
     }
 };
 
 actionTable = {
-    'help':                [[GU.inBroadcast],                    GU.help,                '- Display this help.'],
-    'ping':                [[GU.inBroadcast],                    GU.ping,                '- Ping the BOT.'],
-    'removeNext':          [[GU.inBroadcast, GU.guestCheck],     GU.removeNextSong,      '- Remove the next song in the queue.'],
-    'removeLast':          [[GU.inBroadcast, GU.guestCheck],     GU.removeLastSong,      '- Remove the last song of the queue.'],
-    'previewRemoveByName': [[GU.inBroadcast, GU.guestCheck],     GU.previewRemoveByName, '[FILTER] - Get the list of songs that will be remove when calling \'removeByName\' with the same FILTER.'],
-    'removeByName':        [[GU.inBroadcast, GU.guestCheck],     GU.removeByName,        '[FILTER] - Remove all songs that matches the filter. If the filter if empty, remove everything. Use the \'previewRemoveByName\' first.'],
-    'showPlaylist':        [[GU.inBroadcast, GU.guestCheck],     GU.showPlaylist,        '[FILTER] - Get the ID of a particular playlist.'],
-    'playPlaylist':        [[GU.inBroadcast, GU.guestCheck],     GU.playPlaylist,        'PLAYLISTID - Play the playlist from the ID given by \'showPlaylist\'.'],
-    'skip':                [[GU.inBroadcast, GU.guestCheck],     GU.skip,                '- Skip the current song.'],
-    'shuffle':             [[GU.inBroadcast, GU.guestCheck],     GU.shuffle,             '- Shuffle the current queue.'],
-    'peek':                [[GU.inBroadcast, GU.whiteListCheck], GU.previewSongs,        '[NUMBER] - Preview the songs that are in the queue.'],
-    'guest':               [[GU.inBroadcast, GU.whiteListCheck], GU.guest,               '- Toogle your guest status.'],
-    'about':               [[GU.inBroadcast],                    GU.about,               '- About this software.']
+    'help':                 [[GU.inBroadcast],                          GU.help,                 '- Display this help.'],
+    'ping':                 [[GU.inBroadcast],                          GU.ping,                 '- Ping the BOT.'],
+    'addToCollection':      [[GU.inBroadcast, GU.strictWhiteListCheck], GU.addToCollection,      '- Add this song to the collection.'],
+    'removeFromCollection': [[GU.inBroadcast, GU.strictWhiteListCheck], GU.removeFromCollection, '- Remove this song from the collection.'],
+    'removeNext':           [[GU.inBroadcast, GU.guestCheck],           GU.removeNextSong,       '- Remove the next song in the queue.'],
+    'removeLast':           [[GU.inBroadcast, GU.guestCheck],           GU.removeLastSong,       '- Remove the last song of the queue.'],
+    'fetchByName':          [[GU.inBroadcast, GU.guestCheck],           GU.fetchByName,          '[FILTER] - Place the first song of the queue that matches FILTER at the beginning of the queue.'],
+    'previewRemoveByName':  [[GU.inBroadcast, GU.guestCheck],           GU.previewRemoveByName,  '[FILTER] - Get the list of songs that will be remove when calling \'removeByName\' with the same FILTER.'],
+    'removeByName':         [[GU.inBroadcast, GU.guestCheck],           GU.removeByName,         '[FILTER] - Remove all songs that matches the filter. If the filter if empty, remove everything. Use the \'previewRemoveByName\' first.'],
+    'showPlaylist':         [[GU.inBroadcast, GU.guestCheck],           GU.showPlaylist,         '[FILTER] - Get the ID of a particular playlist.'],
+    'playPlaylist':         [[GU.inBroadcast, GU.guestCheck],           GU.playPlaylist,         'PLAYLISTID - Play the playlist from the ID given by \'showPlaylist\'.'],
+    'skip':                 [[GU.inBroadcast, GU.guestCheck],           GU.skip,                 '- Skip the current song.'],
+    'shuffle':              [[GU.inBroadcast, GU.guestCheck],           GU.shuffle,              '- Shuffle the current queue.'],
+    'peek':                 [[GU.inBroadcast, GU.whiteListCheck],       GU.previewSongs,         '[NUMBER] - Preview the songs that are in the queue.'],
+    'guest':                [[GU.inBroadcast, GU.whiteListCheck],       GU.guest,                '- Toogle your guest status.'],
+    'about':                [[GU.inBroadcast],                          GU.about,                '- About this software.']
 };
 
-if (GUParams.userReq != '' && GUParams.passReq != '')
+(function()
 {
-    GS.Services.API.logoutUser().then(function(){
-        GS.Services.API.authenticateUser(GUParams.userReq, GUParams.passReq).then(function(user) { document.body.innerHTML = ''; setTimeout(function(){window.location = "http://broadcast-nologin/";}, 200); } );
-    });
-}
-else
-    GU.broadcast();
+    var callback_start = function()
+    {
+        onbeforeunload = null;
+        if (GUParams.userReq != '' && GUParams.passReq != '')
+        {
+            GS.Services.API.logoutUser().then(function(){
+                GS.Services.API.authenticateUser(GUParams.userReq, GUParams.passReq).then(function(user) { window.location = "http://broadcast-nologin/";});
+            });
+        }
+        else
+            GU.broadcast();
+    }
+    var init_check = function ()
+    {
+        try {
+            GS.ready.done(callback_start);
+        } catch(e) {
+            setTimeout(init_check, 100);
+        }
+    }
+    init_check();
+})()

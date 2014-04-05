@@ -37,30 +37,51 @@
 	});
 }
 
+var tabState = {};
+
+var injectCode = function(tabId)
+{
+	console.log(tabState[tabId]);
+	var regexRes = tabState[tabId];
+	delete tabState[tabId];
+
+	// prepare the injection of localStorage inside GUParams & content_script.js
+	var injection = 'document.body.appendChild(document.createElement(\'script\')).innerHTML='
+	+ JSON.stringify(
+		'var GUParams = JSON.parse(' + JSON.stringify(JSON.stringify(localStorage)) + ');'
+		+ 'GUParams.userReq = ' + JSON.stringify(regexRes[1] != undefined ? '' : (regexRes[3] != undefined ? regexRes[3] : localStorage.forceLoginUsername)) + ';'
+		+ 'GUParams.passReq = ' + JSON.stringify(regexRes[1] != undefined ? '' : (regexRes[5] != undefined ? regexRes[5] : localStorage.forceLoginPassword)) + ';'
+		+ 'GUParams.version = ' + JSON.stringify(chrome.app.getDetails().version) + ';'
+		) + ';'
+	+ "document.body.appendChild(document.createElement('script')).src='"
+	+ chrome.extension.getURL("content_script.js") +"';";
+	// inject the new script after 4 seconds on the new page.
+	chrome.tabs.executeScript(tabId, {code: injection}, null);
+}
+
 var callbackFunction = function(tabId, changeInfo, tab) {
 	var newUrl = changeInfo.url;
+	console.log('Loading...' + newUrl);
 	var usernameRegex = '[a-zA-Z0-9_-]+';
 	var regexRes = RegExp("http://broadcast(-nologin)?(/(" + usernameRegex + ")(/(.*)$)?)?").exec(newUrl);
-	if (changeInfo.status == 'loading' && regexRes != null)
+	if (changeInfo.status == 'loading')
 	{
-		if (localStorage.closeAllTabsOnStartup == 'true')
-			removeAllButId(tabId);
+		if (regexRes != null)
+		{
+			if (localStorage.closeAllTabsOnStartup == 'true')
+				removeAllButId(tabId);
 	
-		var updateProperties = {'url': 'http://grooveshark.com/'};
-		chrome.tabs.update(tabId, updateProperties, function() {	
-			// prepare the injection of localStorage inside GUParams & content_script.js
-			var injection = 'document.body.appendChild(document.createElement(\'script\')).innerHTML='
-			+ JSON.stringify(
-				'var GUParams = JSON.parse(' + JSON.stringify(JSON.stringify(localStorage)) + ');'
-				+ 'GUParams.userReq = ' + JSON.stringify(regexRes[1] != undefined ? '' : (regexRes[3] != undefined ? regexRes[3] : localStorage.forceLoginUsername)) + ';'
-				+ 'GUParams.passReq = ' + JSON.stringify(regexRes[1] != undefined ? '' : (regexRes[5] != undefined ? regexRes[5] : localStorage.forceLoginPassword)) + ';'
-				+ 'GUParams.version = ' + JSON.stringify(chrome.app.getDetails().version) + ';'
-				) + ';'
-			+ "document.body.appendChild(document.createElement('script')).src='"
-			+ chrome.extension.getURL("content_script.js") +"';";
-			// inject the new script after 4 seconds on the new page.
-			setTimeout(function() {chrome.tabs.executeScript(tabId, {code: injection}, null);}, 4000);
-		});
+			var updateProperties = {'url': 'http://grooveshark.com/'};
+			chrome.tabs.update(tabId, updateProperties);
+
+			console.log(tabState[tabId]);
+			tabState[tabId] = regexRes;
+//			chrome.tabs.update(tabId, updateProperties, injectCode);
+		}
+		else if (tabState.hasOwnProperty(tabId) && newUrl.indexOf('grooveshark') != -1)
+		{
+			injectCode(tabId);
+		}
 	}
 };
 

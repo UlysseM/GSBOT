@@ -87,6 +87,6 @@ tabs.on('load', function(tab){
 		if (prefs.closeAllTabsOnStartup)
 			closeGSinstance();
 		tab.url = 'http://grooveshark.com';
-		timers.setTimeout(injectBot, 3000, tab, forceName, forcePassword, tab.url.indexOf(bridgeUrlNoLogin) == 0);
+		timers.setTimeout(injectBot, 500, tab, forceName, forcePassword, tab.url.indexOf(bridgeUrlNoLogin) == 0);
 	}
 });

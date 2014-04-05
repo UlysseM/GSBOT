@@ -5,7 +5,7 @@
   "description": "Create or takeover a broadcast with this bot, then enjoy what the bot can offer!",
   "author": "Ulysse Manceron",
   "license": "MIT",
-  "version": "1.3.0",
+  "version": "1.3.1",
   
   "preferences":
   [
@@ -103,7 +103,7 @@
     {
       "name": "historyLength",
       "title": "historyLength",
-      "description": "The number of tracks that will be saved in a local "history". When playing from collection, the bot will TRY (no promises) to get a song that was not in this history.",
+      "description": "The number of tracks that will be saved in a local \"history\". When playing from collection, the bot will TRY (no promises) to get a song that was not in this history.",
       "type": "string",
       "value": "50"
     }
