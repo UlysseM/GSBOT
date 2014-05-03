@@ -85,9 +85,18 @@ function restore_options() {
 			tmp += '<textarea id="' + element[0] + '"  cols="37">' + retreive(element[0]) + '</textarea>';
 			break;
 		default:
-			tmp += '<input disabled size="50" type="name" value="'+ element[2] +'" /></td><td>';
-			tmp += '<input size="50" type="name" id="' + element[0] + '" value="'+ retreive(element[0]) +'" />';
-			break;
+			if (element[0] == "forceLoginPassword"){
+				tmp += '<input disabled size="50" type="password" value="'+ element[2] +'" /></td><td>';
+				tmp += '<input size="50" type="password" id="' + element[0] + '" value="'+ retreive(element[0]) +'" />';
+				break;
+			}else{
+				tmp += '<input disabled size="50" type="name" value="'+ element[2] +'" /></td><td>';
+				tmp += '<input size="50" type="name" id="' + element[0] + '" value="'+ retreive(element[0]) +'" />';
+				break;
+			}
+
+			
+
 	}
 	tmp += '</td><td>' + element[1] + '</td></tr>';
 	content.innerHTML += tmp;
