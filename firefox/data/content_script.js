@@ -204,13 +204,25 @@ var GU = {
             GS.Services.SWF.removeSongs([nextSong.queueSongID]);
         }
     },
- 'removeLastSong': function()
+ 'removeLastSong': function(message, numberStr)
     {
         var songs = GS.Services.SWF.getCurrentQueue().songs;
-        var id = songs[songs.length - 1].queueSongID;
-        if (id != GS.Services.SWF.getCurrentQueue().activeSong.queueSongID)
+        var allID = [];
+        var number = Math.floor(Number(numberStr));
+        if (isNaN(number) || number < 1)
+            number = 1;
+        while (--number >= 0)
         {
-            GS.Services.SWF.removeSongs([id]);
+            if (songs.length - 1 - number >= 0)
+            {
+                var id = songs[songs.length - 1 - number].queueSongID;
+                if (id != GS.Services.SWF.getCurrentQueue().activeSong.queueSongID)
+                    allID.push(id);
+            }
+        }
+        if (allID.length > 0)
+        {
+            GS.Services.SWF.removeSongs(allID);
         }
     },
  'getMatchedSongsList': function(stringFilter)
@@ -298,6 +310,10 @@ var GU = {
         }
         GU.sendMsg('Only ' + GUParams.whiteListName + ' can use that feature, sorry!');        
         return false;
+    },
+ 'guestOrWhite': function(current)
+    {
+        return (GU.guestCheck(current) || GU.whiteListCheck(current));
     },
  'ownerCheck': function(current)
     {
@@ -395,9 +411,21 @@ var GU = {
         else
             GS.Services.SWF.broadcastAddVIPUser(userID,0,63); // 63 seems to be the permission mask
     },
- 'ping': function()
+ 'makeGuest': function(current, guestID)
     {
-        GU.sendMsg('Ping resp!');
+        guestID = Number(guestID);
+        if (!isNaN(guestID))
+            GS.Services.SWF.broadcastAddVIPUser(guestID,0,63); // 63 seems to be the permission mask
+    },
+ 'unguestAll': function()
+    {
+        GS.getCurrentBroadcast().attributes.publishersUsersIDs.forEach(function(guestID) {
+            GS.Services.SWF.broadcastRemoveVIPUser(guestID);
+        });
+    },
+ 'ping': function(current)
+    {
+        GU.sendMsg('Ping resp! Oh, and your user ID is ' + current.find('a.user-name').attr('data-user-id') + '!');
     },
  'about': function()
     {
@@ -466,11 +494,11 @@ var GU = {
 
 actionTable = {
     'help':                 [[GU.inBroadcast],                          GU.help,                 '- Display this help.'],
-    'ping':                 [[GU.inBroadcast],                          GU.ping,                 '- Ping the BOT.'],
+    'ping':                 [[GU.inBroadcast],                          GU.ping,                 '- Ping the BOT, also prints your USERID.'],
     'addToCollection':      [[GU.inBroadcast, GU.strictWhiteListCheck], GU.addToCollection,      '- Add this song to the collection.'],
     'removeFromCollection': [[GU.inBroadcast, GU.strictWhiteListCheck], GU.removeFromCollection, '- Remove this song from the collection.'],
     'removeNext':           [[GU.inBroadcast, GU.guestCheck],           GU.removeNextSong,       '- Remove the next song in the queue.'],
-    'removeLast':           [[GU.inBroadcast, GU.guestCheck],           GU.removeLastSong,       '- Remove the last song of the queue.'],
+    'removeLast':           [[GU.inBroadcast, GU.guestCheck],           GU.removeLastSong,       '[NUMBER] - Remove the last song of the queue.'],
     'fetchByName':          [[GU.inBroadcast, GU.guestCheck],           GU.fetchByName,          '[FILTER] - Place the first song of the queue that matches FILTER at the beginning of the queue.'],
     'previewRemoveByName':  [[GU.inBroadcast, GU.guestCheck],           GU.previewRemoveByName,  '[FILTER] - Get the list of songs that will be remove when calling \'removeByName\' with the same FILTER.'],
     'removeByName':         [[GU.inBroadcast, GU.guestCheck],           GU.removeByName,         '[FILTER] - Remove all songs that matches the filter. If the filter if empty, remove everything. Use the \'previewRemoveByName\' first.'],
@@ -478,8 +506,10 @@ actionTable = {
     'playPlaylist':         [[GU.inBroadcast, GU.guestCheck],           GU.playPlaylist,         'PLAYLISTID - Play the playlist from the ID given by \'showPlaylist\'.'],
     'skip':                 [[GU.inBroadcast, GU.guestCheck],           GU.skip,                 '- Skip the current song.'],
     'shuffle':              [[GU.inBroadcast, GU.guestCheck],           GU.shuffle,              '- Shuffle the current queue.'],
-    'peek':                 [[GU.inBroadcast, GU.whiteListCheck],       GU.previewSongs,         '[NUMBER] - Preview the songs that are in the queue.'],
-    'guest':                [[GU.inBroadcast, GU.whiteListCheck],       GU.guest,                '- Toogle your guest status.'],
+    'peek':                 [[GU.inBroadcast, GU.guestOrWhite],         GU.previewSongs,         '[NUMBER] - Preview the songs that are in the queue.'],
+    'guest':                [[GU.inBroadcast, GU.guestOrWhite],         GU.guest,                '- Toogle your guest status.'],
+    'makeGuest':            [[GU.inBroadcast, GU.strictWhiteListCheck], GU.makeGuest,            'USERID - Force-guest a user with its ID.'],
+    'unguestAll':           [[GU.inBroadcast, GU.strictWhiteListCheck], GU.unguestAll,           '- Unguest everyone.'],
     'about':                [[GU.inBroadcast],                          GU.about,                '- About this software.']
 };
 
