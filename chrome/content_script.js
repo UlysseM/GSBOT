@@ -313,7 +313,7 @@ var GU = {
     },
  'guestOrWhite': function(current)
     {
-        return (GU.guestCheck(current) || GU.whiteListCheck(current));
+        return (current.hasClass('chat-vip') || GU.whiteListCheck(current));
     },
  'ownerCheck': function(current)
     {
