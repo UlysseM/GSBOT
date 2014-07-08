@@ -112,7 +112,10 @@ var GU = {
             var curr = songs[i];
             if (curr == null)
                 break;
-            string = string + '#' +i + ': ' + curr.SongName + ' ~ From: ' + curr.AlbumName + GUParams.separator;
+            if (GUParams.displayAuthorNotAlbum.toString() === 'true')
+                string = string + '#' +i + ': ' + curr.SongName + ' ~ From: ' + curr.ArtistName + GUParams.separator;
+            else
+                string = string + '#' +i + ': ' + curr.SongName + ' ~ From: ' + curr.AlbumName + GUParams.separator;
         }
         GU.sendMsg('Next songs are: ' + string.substring(0, string.length - GUParams.separator.length));
     },
@@ -268,6 +271,12 @@ var GU = {
         if (songToPlay.length > 0)
             GS.Services.SWF.moveSongsTo([songToPlay[0].queueSongID], 1, true);
     },
+ 'fetchLast': function(message, stringFilter)
+    {
+        var songList = GS.Services.SWF.getCurrentQueue().songs;
+        if (songList.length > 2)
+            GS.Services.SWF.moveSongsTo([songList[songList.length - 1].queueSongID], 1, true);
+    },
  'shuffle': function()
     {
         $('.shuffle').click();
@@ -304,7 +313,7 @@ var GU = {
         {
             return true;
         }
-        else if (GUParams.whitelistIncludesFollowing && !GU.inListCheck(current, GUParams.blacklist) && GU.followerCheck(current))
+        else if (GUParams.whitelistIncludesFollowing.toString() === 'true' && !GU.inListCheck(current, GUParams.blacklist) && GU.followerCheck(current))
         {
             return true;
         }
@@ -500,6 +509,7 @@ actionTable = {
     'removeNext':           [[GU.inBroadcast, GU.guestCheck],           GU.removeNextSong,       '- Remove the next song in the queue.'],
     'removeLast':           [[GU.inBroadcast, GU.guestCheck],           GU.removeLastSong,       '[NUMBER] - Remove the last song of the queue.'],
     'fetchByName':          [[GU.inBroadcast, GU.guestCheck],           GU.fetchByName,          '[FILTER] - Place the first song of the queue that matches FILTER at the beginning of the queue.'],
+    'fetchLast':            [[GU.inBroadcast, GU.guestCheck],           GU.fetchLast,            '- Bring the last song at the beginning of the queue.'],
     'previewRemoveByName':  [[GU.inBroadcast, GU.guestCheck],           GU.previewRemoveByName,  '[FILTER] - Get the list of songs that will be remove when calling \'removeByName\' with the same FILTER.'],
     'removeByName':         [[GU.inBroadcast, GU.guestCheck],           GU.removeByName,         '[FILTER] - Remove all songs that matches the filter. If the filter if empty, remove everything. Use the \'previewRemoveByName\' first.'],
     'showPlaylist':         [[GU.inBroadcast, GU.guestCheck],           GU.showPlaylist,         '[FILTER] - Get the ID of a particular playlist.'],
