@@ -30,6 +30,7 @@ var actionTable = {};
 var lastPlay;
 var forcePlay = false;
 var playingRandom = false;
+var followingList = [];
 
 // GroovesharkUtils
 var GU = {
@@ -282,51 +283,54 @@ var GU = {
         $('.shuffle').click();
         GU.sendMsg('The queue has been shuffled!');
     },
- 'guestCheck': function(current)
+ 'isGuesting': function(userid)
     {
-        if (!current.hasClass('chat-vip'))
+        return GS.getCurrentBroadcast().attributes.vipUsers.some(function(elem){return elem.userID == userid;});
+    },
+ 'guestCheck': function(userid)
+    {
+        if (!GU.isGuesting(userid))
         {
             GU.sendMsg('Only Guests can use that feature, sorry!');
-            return false;
+            return false;        
         }
         return true;    
     },
- 'inListCheck': function(current, list)
+ 'inListCheck': function(userid, list)
     {
-        console.log(current.find('a.favorite').attr('data-user-id'));
-        return list.split(',').indexOf(current.find('a.favorite').attr('data-user-id')) != -1;
+        return list.split(',').indexOf("" + userid) != -1;
     },
- 'followerCheck': function(current)
+ 'followerCheck': function(userid)
     {
-        return (current.find('a.favorite').hasClass('btn-success'));
+        return followingList.indexOf(userid) != -1;
     },
- 'strictWhiteListCheck': function(current)
+ 'strictWhiteListCheck': function(userid)
     {
-        if (GU.inListCheck(current, GUParams.whitelist))
+        if (GU.inListCheck(userid, GUParams.whitelist))
             return true;
         GU.sendMsg('Only user that are explicitly in the whitelist can use this feature, sorry!');
         return false;
     },
- 'whiteListCheck': function(current)
+ 'whiteListCheck': function(userid)
     {
-        if (GU.inListCheck(current, GUParams.whitelist)) // user in whitelist
+        if (GU.inListCheck(userid, GUParams.whitelist)) // user in whitelist
         {
             return true;
         }
-        else if (GUParams.whitelistIncludesFollowing.toString() === 'true' && !GU.inListCheck(current, GUParams.blacklist) && GU.followerCheck(current))
+        else if (GUParams.whitelistIncludesFollowing.toString() === 'true' && !GU.inListCheck(userid, GUParams.blacklist) && GU.followerCheck(userid))
         {
             return true;
         }
         GU.sendMsg('Only ' + GUParams.whiteListName + ' can use that feature, sorry!');        
         return false;
     },
- 'guestOrWhite': function(current)
+ 'guestOrWhite': function(userid)
     {
-        return (current.hasClass('chat-vip') || GU.whiteListCheck(current));
+        return (GU.isGuesting(userid) || GU.whiteListCheck(userid));
     },
- 'ownerCheck': function(current)
+ 'ownerCheck': function(userid)
     {
-        if (!current.hasClass('chat-owner'))
+        if (userid != GS.getCurrentBroadcast().attributes.UserID)
         {
             GU.sendMsg('Only the Master can use that feature, sorry!');
             return false;
@@ -335,22 +339,15 @@ var GU = {
     },
  'doParseMessage': function(current)
     {
-        var string = current.find('.message').text();
+        var string = current.data;
         var regexp = RegExp('^/([a-zA-Z]*)([ ]+([a-zA-Z0-9 ]+))?$');
         var regResult = regexp.exec(string);
         if (regResult != null)
         {
             var currentAction = actionTable[regResult[1]];
-            if (currentAction instanceof Array && currentAction[0].every(function(element){return element(current);}))
+            if (currentAction instanceof Array && currentAction[0].every(function(element){return element(current.userID);}))
                 currentAction[1](current, regResult[3]);
         }
-    },
- 'parseMessages': function()
-    {
-        $('.chat-message:not(.parsed)').each(function() {
-            $(this).addClass('parsed');
-            GU.doParseMessage($(this));
-        });
     },
  'forcePlay': function()
     {
@@ -403,17 +400,16 @@ var GU = {
         GU.addSongToHistory();
         if (songleft < 1)
             GU.playRandomSong();
-        GU.parseMessages();
         GU.deletePlayedSong();
         GU.forcePlay();
         /*
             Idea for later:
-            To remove this callback, we can extends both GS.Services.SWF.handleBroadcastChat and GS.Services.SWF.queueChange.
+            To remove this callback, we can extends GS.Services.SWF.queueChange.
         */
     },
  'guest': function(current)
     {
-        var userID = current.find('a.favorite').attr('data-user-id');
+        var userID = current.userID;
         
         if (GS.getCurrentBroadcast().getPermissionsForUserID(userID) != undefined) // is guest
             GS.Services.SWF.broadcastRemoveVIPUser(userID);
@@ -434,7 +430,7 @@ var GU = {
     },
  'ping': function(current)
     {
-        GU.sendMsg('Ping resp! Oh, and your user ID is ' + current.find('a.user-name').attr('data-user-id') + '!');
+        GU.sendMsg('Ping resp! Oh, and your user ID is ' + current.userID + '!');
     },
  'about': function()
     {
@@ -483,6 +479,26 @@ var GU = {
         lastPlay = new Date();
         // Check if there are msg in the chat, and process them.
         setInterval(GU.callback, 1000);
+
+        // Overload handlechat
+        var handleBroadcastSaved = GS.Services.SWF.handleBroadcastChat;
+        GS.Services.SWF.handleBroadcastChat = function(e, t){handleBroadcastSaved(e,t);GU.doParseMessage(t);};
+
+    },
+ 'updateFollowing': function()
+    {
+        GS.Services.API.userGetFollowersFollowing().then(
+            function(alluser)
+            {
+                followingList = [];
+                alluser.forEach(function(single)
+                {
+                    if (single.IsFavorite === '1')
+                    {
+                        followingList.push(parseInt(single.UserID));
+                    }
+                });
+            });
     },
  'broadcast': function()
     {
@@ -490,6 +506,7 @@ var GU = {
             alert('Cannot login!');
         else
         {
+            GU.updateFollowing();
             GS.Services.API.getUserLastBroadcast().then(function(bc) {
                 GS.Services.SWF.ready.then(function()
                 {

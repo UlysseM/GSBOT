@@ -4,7 +4,7 @@
   "name": "Grooveshark Broadcast Bot",
   "short_name": "GS Bot",
   "description": "Create or takeover a broadcast with this bot, then enjoy what the bot can offer!",
-  "version": "1.3.4",
+  "version": "1.4.0",
   "icons": { "16": "icon16.png",
 			"48": "icon48.png",
 			"128": "icon128.png" },

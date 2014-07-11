@@ -27,7 +27,7 @@ var store = function(param, value) {
 	localStorage.setItem(param, value);
 };
 
-var retreive = function(param) {
+var retrieve = function(param) {
 	return localStorage.getItem(param);
 };
 
@@ -71,7 +71,7 @@ function save_options() {
 function restore_options() {
   content.innerHTML = '';
   defValue.forEach(function(element) {
-	if (retreive(element[0]) == undefined)
+	if (retrieve(element[0]) == undefined)
 		store(element[0], element[2]);
 
 	var tmp = '<tr><td>' + element[0] + '</td><td>';
@@ -79,15 +79,15 @@ function restore_options() {
 	{
 		case 'boolean':
 			tmp += '<input disabled type="checkbox" ' + (element[2] ? 'checked' : '')  + ' /></td><td>';
-			tmp += '<input type="checkbox" id="' + element[0] + '" ' + (retreive(element[0]) == 'true' ? 'checked' : '')  + ' />';
+			tmp += '<input type="checkbox" id="' + element[0] + '" ' + (retrieve(element[0]) == 'true' ? 'checked' : '')  + ' />';
 			break;
 		case 'object':
 			tmp += '<textarea disabled cols="37"></textarea></td><td>';
-			tmp += '<textarea id="' + element[0] + '"  cols="37">' + retreive(element[0]) + '</textarea>';
+			tmp += '<textarea id="' + element[0] + '"  cols="37">' + retrieve(element[0]) + '</textarea>';
 			break;
 		default:
 			tmp += '<input disabled size="50" type="name" value="'+ element[2] +'" /></td><td>';
-			tmp += '<input size="50" type="name" id="' + element[0] + '" value="'+ retreive(element[0]) +'" />';
+			tmp += '<input size="50" type="name" id="' + element[0] + '" value="'+ retrieve(element[0]) +'" />';
 			break;
 	}
 	tmp += '</td><td>' + element[1] + '</td></tr>';
@@ -98,7 +98,7 @@ function restore_options() {
 function reset_all() {
 	if (confirm('Are you sure you want to reset your setting?'))
 	{
-		var version = retreive('lastest_version');
+		var version = retrieve('lastest_version');
 		localStorage.clear();
 		store('lastest_version', version);
 		restore_options();

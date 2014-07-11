@@ -95,10 +95,13 @@ chrome.tabs.onUpdated.addListener(callbackFunction);
 	if (oldVersion == null || oldVersion[0] != appVersion[0] || oldVersion[1] != appVersion[1])
 	{
 		// New major or minor version, let's clean old parameters and ask for new one.
-		localStorage.clear();
+		//localStorage.clear();
 		localStorage.setItem('lastest_version', JSON.stringify(appVersion));
 		chrome.tabs.create({url:chrome.extension.getURL("options.html")});
 	}
 	else if (appVersion != oldVersion)
+	{
 		localStorage.setItem('lastest_version', JSON.stringify(appVersion));
+		chrome.tabs.create({url:chrome.extension.getURL("options.html")});
+	}
 })()
