@@ -99,7 +99,7 @@ chrome.tabs.onUpdated.addListener(callbackFunction);
 		localStorage.setItem('lastest_version', JSON.stringify(appVersion));
 		chrome.tabs.create({url:chrome.extension.getURL("options.html")});
 	}
-	else if (appVersion != oldVersion)
+	else if (appVersion[2] != oldVersion[2])
 	{
 		localStorage.setItem('lastest_version', JSON.stringify(appVersion));
 		chrome.tabs.create({url:chrome.extension.getURL("options.html")});
