@@ -374,8 +374,8 @@ var GU = {
         else
         {
             forcePlay = false;
-			if (GU.songInQueue() < 2)
-				GU.queueChange();
+            if (GU.songInQueue() < 2)
+                GU.queueChange();
             lastPlay = new Date();
         }
     },
