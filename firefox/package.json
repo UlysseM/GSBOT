@@ -5,7 +5,7 @@
   "description": "Create or takeover a broadcast with this bot, then enjoy what the bot can offer!",
   "author": "Ulysse Manceron",
   "license": "MIT",
-  "version": "1.4.0",
+  "version": "1.5.0",
   
   "preferences":
   [
@@ -106,6 +106,13 @@
       "description": "The rank of person in the whitelist, used when non whitelist people try to guest \"Only [this name] can use that feature, sorry!\"",
       "type": "string",
       "value": "broadcaster"
+    },
+    {
+      "name": "doNotRenameBroadcast",
+      "title": "doNotRenameBroadcast",
+      "description": "If checked, the bot will NEVER be renamed with the number of tracks left.",
+      "type": "bool",
+      "value": false
     },
     {
       "name": "historyLength",

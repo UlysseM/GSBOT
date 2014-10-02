@@ -46,6 +46,7 @@ var defValue = [
 	['displayAuthorNotAlbum', 'If checked, seek will display the number author instead of the album.', false],
 	['blacklist', 'The ID of the grooveshark user in this list will not be able to /guest, even if they are being followed by you, and if you checked whitelistIncludesFollowing. Separate each ID with a comma.', []],
 	['whiteListName', 'The rank of person in the whitelist, used when non whitelist people try to guest "Only [this name] can use that feature, sorry!"', 'broadcaster'],
+	['doNotRenameBroadcast', 'If checked, the bot will NEVER be renamed with the number of tracks left.', false],
 	['historyLength', 'The number of tracks that will be saved in a local "history". When playing from collection, the bot will TRY (no promises) to get a song that was not in this history.', '50']
 ];
 

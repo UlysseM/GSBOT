@@ -68,6 +68,8 @@ var GU = {
     },
  'renameBroadcast': function(bdcName)
     {
+        if (GUParams.doNotRenameBroadcast)
+            return;
         var attributes = GS.getCurrentBroadcast().attributes;
         if (attributes == undefined)
             return;
@@ -153,6 +155,9 @@ var GU = {
     },
  'playRandomSong': function()
     {
+        if (new Date() - lastPlay < 500)
+            return;
+        lastPlay = new Date();
         playingRandom = true;
         var nextSong = allSongsId[Math.floor(Math.random() * allSongsId.length)];
         if (nextSong != undefined)
@@ -353,12 +358,13 @@ var GU = {
     {
         if (Grooveshark.getCurrentSongStatus().status != 'playing')
         {
-            if (new Date() - lastPlay > 4000 && !forcePlay)
+            GU.queueChange(); // if we are not playing, we should check to add songs to the queue...
+            if (new Date() - lastPlay > 6000 && !forcePlay)
             {
                 forcePlay = true;
                 Grooveshark.play();
             }
-            if (new Date() - lastPlay > 8000)
+            if (new Date() - lastPlay > 12000)
             {
                 Grooveshark.removeCurrentSongFromQueue();
                 forcePlay = false;
@@ -368,6 +374,8 @@ var GU = {
         else
         {
             forcePlay = false;
+			if (GU.songInQueue() < 2)
+				GU.queueChange();
             lastPlay = new Date();
         }
     },
@@ -388,7 +396,7 @@ var GU = {
                 lastPlayedSongs.shift();
         }
     },
- 'callback': function()
+ 'queueChange': function()
     {
         if (songleft != GU.songInQueue())
         {
@@ -401,11 +409,6 @@ var GU = {
         if (songleft < 1)
             GU.playRandomSong();
         GU.deletePlayedSong();
-        GU.forcePlay();
-        /*
-            Idea for later:
-            To remove this callback, we can extends GS.Services.SWF.queueChange.
-        */
     },
  'guest': function(current)
     {
@@ -458,6 +461,15 @@ var GU = {
     {
         var properties = { 'Description': bc.Description, 'Name': bc.Name, 'Tag': bc.Tag };
         if (GS.getCurrentBroadcast() === false) {
+            console.log("Creating broadcast");
+            GS.Services.SWF.startBroadcast(properties);
+            setTimeout(GU.startBroadcasting, 3000, bc);
+            return;
+        }
+        else if (GS.isBroadcaster() === false)
+        {
+            console.log("Taking over broadcast");
+            GS.Services.takeOverBroadcast(bc.BroadcastID);
             GS.Services.SWF.startBroadcast(properties);
             setTimeout(GU.startBroadcasting, 3000, bc);
             return;
@@ -477,13 +489,14 @@ var GU = {
             $('#lightbox-close').click();
         }
         lastPlay = new Date();
-        // Check if there are msg in the chat, and process them.
-        setInterval(GU.callback, 1000);
+        // Check if we are not playing any song.
+        setInterval(GU.forcePlay, 3000);
 
         // Overload handlechat
         var handleBroadcastSaved = GS.Services.SWF.handleBroadcastChat;
         GS.Services.SWF.handleBroadcastChat = function(e, t){handleBroadcastSaved(e,t);GU.doParseMessage(t);};
-
+        var handleQueueChange = GS.Services.SWF.queueChange;
+        GS.Services.SWF.queueChange = function(e){handleQueueChange(e);GU.queueChange();};
     },
  'updateFollowing': function()
     {
@@ -502,6 +515,8 @@ var GU = {
     },
  'broadcast': function()
     {
+        GUParams.userReq = '';
+        GUParams.passReq = '';
         if (GS.getLoggedInUserID() <= 0)
             alert('Cannot login!');
         else
@@ -510,8 +525,8 @@ var GU = {
             GS.Services.API.getUserLastBroadcast().then(function(bc) {
                 GS.Services.SWF.ready.then(function()
                 {
-                    GS.Services.SWF.resumeBroadcast(bc.BroadcastID);
-                    setTimeout(GU.startBroadcasting, 3000, bc);
+                    GS.Services.SWF.joinBroadcast(bc.BroadcastID);
+                    setTimeout(GU.startBroadcasting, 4000, bc);
                 });
             });
         }
