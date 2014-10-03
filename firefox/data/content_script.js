@@ -68,7 +68,7 @@ var GU = {
     },
  'renameBroadcast': function(bdcName)
     {
-        if (GUParams.doNotRenameBroadcast)
+        if (GUParams.doNotRenameBroadcast.toString() === 'true')
             return;
         var attributes = GS.getCurrentBroadcast().attributes;
         if (attributes == undefined)
