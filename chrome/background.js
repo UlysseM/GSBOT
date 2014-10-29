@@ -25,14 +25,16 @@
  
  var removeAllButId = function(notThisId)
 {
-	chrome.tabs.query({}, function(tabArray) {
-		tabArray.forEach(function(entry) {
-			if (entry.id != notThisId && RegExp("^http://grooveshark.com/").test(entry.url))
-			{
-				// clear the webpage so the alert won't mess up the exit
-				chrome.tabs.executeScript(entry.id, {file: "rem_content.js"});
-				setTimeout(function(){chrome.tabs.remove(entry.id);}, 2000);
-			}
+	chrome.tabs.getCurrent(function(currentTab) {
+		chrome.tabs.query({}, function(tabArray) {
+			tabArray.forEach(function(entry) {
+				if (entry.id != notThisId && RegExp("^http://grooveshark.com/").test(entry.url) && entry.incognito == currentTab.incognito)
+				{
+					// clear the webpage so the alert won't mess up the exit
+					chrome.tabs.executeScript(entry.id, {file: "rem_content.js"});
+					setTimeout(function(){chrome.tabs.remove(entry.id);}, 2000);
+				}
+			});
 		});
 	});
 }
