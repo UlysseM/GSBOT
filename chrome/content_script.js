@@ -409,6 +409,8 @@ var GU = {
         if (songleft < 1)
             GU.playRandomSong();
         GU.deletePlayedSong();
+        if ($('#broadcast-non-compliant').find('a.submit-disable').length != 0)
+            $('#broadcast-non-compliant').find('a.submit-disable').click();
     },
  'guest': function(current)
     {
