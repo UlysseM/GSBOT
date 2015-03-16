@@ -1,0 +1,5 @@
+
+module.exports = {
+ username: '', // Fill this with your grooveshark email / username
+ password: '', // Fill this with your grooveshark password
+};
