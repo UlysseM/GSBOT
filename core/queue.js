@@ -110,6 +110,36 @@ Queue.prototype.addSong = function(songid, cb) {
     });
 };
 
+// add multiple songs
+Queue.prototype.addSongs = function(songsid, cb) {
+    this.addingTrack++;
+    var queuesongsids = [];
+    for (var i = 0; i < songsid.length; i++)
+    {
+        queuesongsids.push(this.availableQueueTrackId++);
+    }
+    var that = this;
+    this.manatee.pub({
+        type:"data",
+        value: {
+            action:"addSongs",
+            songIDs:songsid,
+            queueSongIDs:queuesongsids,
+            index: this.getLastIndex() + 1,
+        },
+        subs: [{
+            type:"sub",
+            name: this.channel
+        }],
+        async:false,
+        persist:false
+    }, function(res) {
+        that.addingTrack--;
+        if (typeof cb == 'function')
+            cb(res);
+    });    
+};
+
 // Ask server to remove song in the array
 Queue.prototype.removeSongs = function(queueSongIDs, cb) {
     if (queueSongIDs instanceof Array)

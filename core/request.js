@@ -13,7 +13,11 @@ Request.prototype.getCurrentGuests = function() {
 }
 
 Request.prototype.addSong = function(songid) {
-    manatee.getQueue().AddSong();
+    manatee.getQueue().AddSong(songid);
+}
+
+Request.prototype.addSongs = function(songsid) {
+    manatee.getQueue().AddSongs(songsid);
 }
 
 Request.prototype.sendChat = function(message) {

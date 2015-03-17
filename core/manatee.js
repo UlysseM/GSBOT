@@ -63,6 +63,7 @@ var manatee = {
                 console.log('Not sure why getting an unsub alert, let\'s resub...');
                 manatee.sub([{overwrite_params:false,sub:message.unsub_alert.sub}], [manatee.subCallback[message.unsub_alert.sub]]);
             }
+            break;
         default:
             console.log("************************************WARNING************************** Push not parsed!"); // todo
         }
