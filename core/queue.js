@@ -13,17 +13,23 @@ function Queue(manatee) {
     md5sum.update(manatee.userInfo.userID + Date.now() + "");
     this.channel = md5sum.digest('hex');
     
-     // If we can't load the collection soon enough for some reason, we have at least one song to start the broadcast with.
+    // If we can't load the collection soon enough for some reason, we have at least one song to start the broadcast with...
     this.collection = [25032044];
     // The list of current Guest
     this.guests = [];
 
     // We don't store any played track in the queue, so we use this offset.
     this.offsetTrack = 0;
+    // set it to the higher queueTrackID encountered.
+    this.availableQueueTrackId = 1;
     // The local queue
     this.tracks = [];
+    // the queueTrackID of the song currently playing
+    this.currentQueueTrackId = null;
     // The last value returned by the broadcast. Are we currently playing songs?
     this.currentlyPlayingSong = false;
+	// This counts the number of track we are currently adding (aka waiting for callback).
+    this.addingTrack = 0;
     
     // recover the collection
     {
@@ -48,13 +54,6 @@ function Queue(manatee) {
         more(params, false, callback);
     }
 }
-
-
-/**************************************/
-/**************************************/
-/******* NOW BUILDING THE QUEUE *******/
-/**************************************/
-/**************************************/
 
 // Guest someone (or unguest if permission == 0)
 Queue.prototype.makeGuest = function(userID, permission, cb) {
@@ -88,12 +87,14 @@ Queue.prototype.makeGuest = function(userID, permission, cb) {
 
 // submit to the server a song to be added at the end of the queue
 Queue.prototype.addSong = function(songid, cb) {
+    this.addingTrack++;
+    var that = this;
     this.manatee.pub({
         type:"data",
         value: {
             action:"addSongs",
             songIDs:[songid],
-            queueSongIDs:[ this.getLastQueueId() + 1],
+            queueSongIDs:[ this.availableQueueTrackId++ ],
             index: this.getLastIndex() + 1,
         },
         subs: [{
@@ -102,7 +103,11 @@ Queue.prototype.addSong = function(songid, cb) {
         }],
         async:false,
         persist:false
-    }, cb);
+    }, function(res) {
+        that.addingTrack--;
+        if (typeof cb == 'function')
+            cb(res);
+    });
 };
 
 Queue.prototype.playRandom = function(cb) {
@@ -111,6 +116,8 @@ Queue.prototype.playRandom = function(cb) {
         console.log('Collection is empty!');
         return;
     }
+    if (this.addingTrack > 0)
+        return;
     var trackId = Math.floor(Math.random() * this.collection.length);
     this.addSong(this.collection[trackId], cb);
 }
@@ -162,13 +169,14 @@ Queue.prototype.forcePlay = function(cb) {
         console.log('Cannot force play if the queue is empty');
         return;
     }
+    var manatee = this.manatee;
+    var channel = this.channel;
     this.manatee.pub({
         type:"data",
         value: {
             action:"resetQueue",
             songIDs: songid,
             queueSongIDs: queuesongid,
-            blackbox:{"remoraRespID":1}
         },
         subs: [{
             type:"sub",
@@ -176,30 +184,30 @@ Queue.prototype.forcePlay = function(cb) {
         }],
         async:false,
         persist:false
+    }, function() {
+        manatee.pub({
+            type:"data",
+            value: {
+                action:"playSong",
+                queueSongID: queuesongid[0],
+                country: manatee.gsConfig.country,
+                sourceID:1,
+                streamType:0,
+                position:0.0,
+                options:{},
+            },
+            subs: [{
+                type:"sub",
+                name: channel
+            }],
+            async:false,
+            persist:false
+        }, cb);
     });
-    this.manatee.pub({
-        type:"data",
-        value: {
-            action:"playSong",
-            queueSongID: queuesongid[0],
-            country: this.manatee.gsConfig.country,
-            sourceID:1,
-            streamType:0,
-            position:0.0,
-            options:{},
-            blackbox:{"remoraRespID":2}
-        },
-        subs: [{
-            type:"sub",
-            name: this.channel
-        }],
-        async:false,
-        persist:false
-    }, cb);
 }
 
 // Add to the local queue a track with its index
-Queue.prototype.qAdd = function (trackId, queueid, index) {
+Queue.prototype.qAdd = function(trackId, queueid, index) {
     // If the track with the queueid is in the list, remove it (as we might move it)
     var posInQueue = -1;
     if (this.tracks.some(function(t){++posInQueue;return t.qid == queueid;}))
@@ -207,17 +215,33 @@ Queue.prototype.qAdd = function (trackId, queueid, index) {
 
     var relativeIndex = index - this.offsetTrack;
     this.tracks.splice(relativeIndex, 0, {id: trackId, qid: queueid});
+    this.pushAvailableQueueTrackId(queueid);
+}
+
+// Add to the local queue at the end of the list
+Queue.prototype.qPush = function(trackId, queueid) {
+    this.tracks.push({id: trackId, qid: queueid});
+    this.pushAvailableQueueTrackId(queueid);
 }
 
 // Remove all tracks previously played from the local queue
 Queue.prototype.qClean = function(currentPlayingQueueId) {
-    while (this.tracks.length && this.tracks[0].qid != currentPlayingQueueId)
+    if (currentPlayingQueueId != undefined)
+        this.currentQueueTrackId = currentPlayingQueueId;
+    while (this.tracks.length && this.tracks[0].qid != this.currentQueueTrackId)
     {
         this.tracks.shift();
         ++this.offsetTrack;
     }
     console.log('LOCAL QUEUE STATUS: offset:' + this.offsetTrack + ', inside:');
     console.log(this.tracks);
+}
+
+// Reset the current local queue
+Queue.prototype.qReset = function() {
+    this.offsetTrack = 0;
+    while (this.tracks.length)
+        this.tracks.shift();
 }
 
 // Get the ID of the track we are playing right now, 0 if none
@@ -235,14 +259,19 @@ Queue.prototype.getTracksArray = function(tid, qid) {
     });
 }
 
-// Get the last queueTrackId from the queue
-Queue.prototype.getLastQueueId = function() {
-    var last = 0;
-    this.tracks.forEach(function(track) {
-        if (track.qid > last)
-            last = track.qid;
+Queue.prototype.pushAvailableQueueTrackId = function(id) {
+    if (id >= this.availableQueueTrackId)
+        this.availableQueueTrackId = id + 1;
+}
+
+Queue.prototype.updatePublisher = function(publishers) {
+    var guests = this.guests;
+    guests.splice(0, guests.length);
+    var broadcasterid = this.manatee.userInfo.userID;
+    publishers.forEach(function(pub) {
+        if (pub.name != broadcasterid)
+            guests.push(parseInt(pub.name));
     });
-    return last;
 }
 
 // Get the last Index from the queue

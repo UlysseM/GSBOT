@@ -19,6 +19,10 @@ Featuring
 
  -Typing /help will give you the list of all available commands
 
+✓ An automatic takeover feature:
+
+ -Can easily takeover your broadcast, without having to disconnect all your listeners. If you don't have a broadcast running, no worries, it will copy the settings of your last broadcast.
+ 
 ✓ A never ending broadcast:
 
  -If the queue runs out, the bot will just pick a random song from your collection.
