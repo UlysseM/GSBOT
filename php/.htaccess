@@ -1,0 +1,3 @@
+order allow,deny
+Deny from 10.1.1.3
+Allow from All
