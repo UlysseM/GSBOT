@@ -1,3 +1,7 @@
+// This module constitute the API accessible by the modules/plugins.
+//
+// A Request is sent to every plugin's callback.
+
 var grooveshark = require('./grooveshark.js');
 var manatee = require('./manatee.js')
 
@@ -26,6 +30,17 @@ Request.prototype.skip = function() {
 
 Request.prototype.moreCmd = function(obj, cb) {
     grooveshark.more(obj, false, cb);
+}
+
+Request.prototype.getTracksInQueue = function() {
+    var tracksCpy = manatee.getQueue().tracks.slice();
+    if (tracksCpy.length)
+        tracksCpy.shift();
+    return tracksCpy;
+}
+
+Request.prototype.removeSongFromQueue = function(queueSongIDs) {
+    manatee.getQueue().removeSongs(queueSongIDs);
 }
 
 /********* CONSTRUCTORS *********/

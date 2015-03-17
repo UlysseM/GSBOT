@@ -57,6 +57,12 @@ var manatee = {
                 manatee.subCallback[message.sub_alert.sub](message.type, message.sub_alert);
             }
             break;
+        case 'unsub_alert':
+            if (message.unsub_alert && message.unsub_alert.sub && manatee.subCallback[message.sub_alert.sub])
+            {
+                console.log('Not sure why getting an unsub alert, let\'s resub...');
+                manatee.sub([{overwrite_params:false,sub:message.unsub_alert.sub}], [manatee.subCallback[message.sub_alert.sub]]);
+            }
         default:
             console.log("************************************WARNING************************** Push not parsed!"); // todo
         }
@@ -246,35 +252,37 @@ sendChatMessage: function(msg, cb) {
                 });
                 break;
             case 'queueUpdate':
-                var addPos = msg.value.options.index;
-                msg.value.songs.forEach(function(song) {
-                    manatee.getQueue().qAdd(song.b.sID, song.queueSongID, addPos++);
-                });
-                if (!manatee.getQueue().currentlyPlayingSong)
+                if (msg.value.type == 'add')
                 {
-                    manatee.getQueue().forcePlay();
+                    var addPos = msg.value.options.index;
+                    msg.value.songs.forEach(function(song) {
+                        manatee.getQueue().qAdd(song.b.sID, song.queueSongID, addPos++, song.b.sN, song.b.arN, song.b.alN);
+                    });
+                    if (!manatee.getQueue().currentlyPlayingSong)
+                    {
+                        manatee.getQueue().forcePlay();
+                    }
+                }
+                else if (msg.value.type == 'remove')
+                {
+                    msg.value.songs.forEach(function(song) {
+                        manatee.getQueue().qDel(song.queueSongID);
+                    });
                 }
                 break;
             case 'addSongs':
-                var addPos = msg.value.index;
-                for (var i = 0; i < msg.value.songIDs.length; ++i)
-                {
-                    manatee.getQueue().qAdd(msg.value.songIDs[i], msg.value.queueSongIDs[i], addPos + i);
-                }
-                if (!manatee.getQueue().currentlyPlayingSong)
-                {
-                    manatee.getQueue().forcePlay();
-                }
-                break;
-            case 'resetQueue':
+            case 'removeSongs':
+                break; // handled through queueUpdate
+            case 'queueReset':
                 if (msg.value.songs)
                 {
                     this.getQueue().qReset();
                     if (manatee.getQueue().currentQueueTrackId)
                     {
+                        
                         var tracks = manatee.getQueue().tracks;
-                        data.value.response.songs.forEach(function(song) {
-                            manatee.getQueue().qPush(song.b.sID, song.queueSongID);
+                        msg.value.songs.forEach(function(song) {
+                            manatee.getQueue().qPush(song.b.sID, song.queueSongID, song.b.sN, song.b.arN, song.b.alN);
                         });
                         manatee.getQueue().qClean(); // We want to make sure the broadcast knows what track we are playing.
                     }
@@ -383,10 +391,27 @@ sendChatMessage: function(msg, cb) {
                 }
                 return;
             }
-            
         }
         break;
     }
+ },
+
+ changeBroadcastName: function(newName, cb) {
+    manatee.pub({
+        "type":"data",
+        "value": {
+            "action":"updateSettings",
+            "settings": {
+                "description":newName,
+            },
+        },
+        subs: [{
+            type:"sub",
+            name:this.getQueue().channel
+        }],
+        async:false,
+        persist:false
+    });
  },
 
  connectQueueToBroadcast: function(lastBroadcast, ownerID, cb) {
@@ -440,7 +465,7 @@ sendChatMessage: function(msg, cb) {
                 {
                     var tracks = manatee.getQueue().tracks;
                     data.value.response.songs.forEach(function(song) {
-                        manatee.getQueue().qPush(song.b.sID, song.queueSongID);
+                        manatee.getQueue().qPush(song.b.sID, song.queueSongID, song.b.sN, song.b.arN, song.b.alN);
                     });
                     manatee.getQueue().qClean(); // We want to make sure the broadcast knows what track we are playing.
                 }

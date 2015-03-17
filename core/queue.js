@@ -28,7 +28,7 @@ function Queue(manatee) {
     this.currentQueueTrackId = null;
     // The last value returned by the broadcast. Are we currently playing songs?
     this.currentlyPlayingSong = false;
-	// This counts the number of track we are currently adding (aka waiting for callback).
+    // This counts the number of track we are currently adding (aka waiting for callback).
     this.addingTrack = 0;
     
     // recover the collection
@@ -109,6 +109,29 @@ Queue.prototype.addSong = function(songid, cb) {
             cb(res);
     });
 };
+
+// Ask server to remove song in the array
+Queue.prototype.removeSongs = function(queueSongIDs, cb) {
+    if (queueSongIDs instanceof Array)
+    {
+        this.manatee.pub({
+            type:"data",
+            value: {
+                "action":"removeSongs",
+                "queueSongIDs":queueSongIDs,
+                
+            },
+            subs: [{
+                type:"sub",
+                name:this.channel
+            }],
+            async:false,
+            persist:false
+        }, cb);
+    }
+    else if (typeof cb == 'function')
+        cb(false);
+}
 
 Queue.prototype.playRandom = function(cb) {
     if (this.collection.length == 0)
@@ -207,21 +230,33 @@ Queue.prototype.forcePlay = function(cb) {
 }
 
 // Add to the local queue a track with its index
-Queue.prototype.qAdd = function(trackId, queueid, index) {
+Queue.prototype.qAdd = function(trackId, queueid, index, name, artist, album) {
     // If the track with the queueid is in the list, remove it (as we might move it)
     var posInQueue = -1;
     if (this.tracks.some(function(t){++posInQueue;return t.qid == queueid;}))
         this.tracks.splice(posInQueue);
 
     var relativeIndex = index - this.offsetTrack;
-    this.tracks.splice(relativeIndex, 0, {id: trackId, qid: queueid});
+    this.tracks.splice(relativeIndex, 0, {id: trackId, qid: queueid, sN:name, arN: artist, alN: album});
     this.pushAvailableQueueTrackId(queueid);
 }
 
 // Add to the local queue at the end of the list
-Queue.prototype.qPush = function(trackId, queueid) {
-    this.tracks.push({id: trackId, qid: queueid});
+Queue.prototype.qPush = function(trackId, queueid, name, artist, album) {
+    this.tracks.push({id: trackId, qid: queueid, sN:name, arN: artist, alN: album});
     this.pushAvailableQueueTrackId(queueid);
+}
+
+// Delete from the local queue
+Queue.prototype.qDel = function(queueid) {
+    for (var i = 0; i < this.tracks.length; ++i)
+    {
+        if (this.tracks[i].qid == queueid)
+        {
+            this.tracks.splice(i, 1);
+            return;
+        }
+    }
 }
 
 // Remove all tracks previously played from the local queue
@@ -259,11 +294,13 @@ Queue.prototype.getTracksArray = function(tid, qid) {
     });
 }
 
+// push a queue track in this to check if availableQueueTrackId needs to be incremented.
 Queue.prototype.pushAvailableQueueTrackId = function(id) {
     if (id >= this.availableQueueTrackId)
         this.availableQueueTrackId = id + 1;
 }
 
+// Send the "publisher" object to update the current guest list
 Queue.prototype.updatePublisher = function(publishers) {
     var guests = this.guests;
     guests.splice(0, guests.length);
