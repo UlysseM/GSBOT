@@ -58,10 +58,10 @@ var manatee = {
             }
             break;
         case 'unsub_alert':
-            if (message.unsub_alert && message.unsub_alert.sub && manatee.subCallback[message.sub_alert.sub])
+            if (message.unsub_alert && message.unsub_alert.sub && manatee.subCallback[message.unsub_alert.sub])
             {
                 console.log('Not sure why getting an unsub alert, let\'s resub...');
-                manatee.sub([{overwrite_params:false,sub:message.unsub_alert.sub}], [manatee.subCallback[message.sub_alert.sub]]);
+                manatee.sub([{overwrite_params:false,sub:message.unsub_alert.sub}], [manatee.subCallback[message.unsub_alert.sub]]);
             }
         default:
             console.log("************************************WARNING************************** Push not parsed!"); // todo
