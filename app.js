@@ -20,7 +20,7 @@ var GU = {
         return manatee.getQueue().guests.indexOf(userid) != -1;
     },
     isFollowed: function(userid) {
-        return GU.isFollowed instanceof Array && GU.isFollowed.indexOf(userid) != -1;
+        return GU.isFollowed.indexOf(userid) != -1;
     }
  },
 
@@ -87,16 +87,11 @@ var GU = {
  },
     
  getFollowing: function() {
-        grooveshark.more({method: 'userGetFollowersFollowingExt', parameters: {}},
+        grooveshark.more({method: 'getFavorites', parameters: {userID: GU.user.userID, ofWhat: "Users"}},
         false,
-        function(alluser)
-        {
-            alluser.forEach(function(single)
-            {
-                if (single.IsFavorite === '1')
-                {
-                    GU.isFollowed.push(parseInt(single.UserID));
-                }
+        function(alluser) {
+            alluser.forEach(function(single) {
+                GU.isFollowed.push(parseInt(single.UserID));
             });
         });
     },
