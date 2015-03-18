@@ -35,6 +35,7 @@ var GU = {
         {
             var mod = GU.mods[regResult[1]];
             var req = request.onCall(userid, GU.followingList, regResult[3]);
+            // TODO: add functionality for eventSilence toggle that when enabled, will silence all non-guest initaiated output, and turn off auto-queuing.
             if (mod && (!mod.permission || mod.permission.some(function(pname){return GU.permissionList[pname](userid)})))
             {
                 try {
