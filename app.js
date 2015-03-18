@@ -20,7 +20,7 @@ var GU = {
         return manatee.getQueue().guests.indexOf(userid) != -1;
     },
     isFollowed: function(userid) {
-        return isFollowed instanceof Array && GU.isFollowed.indexOf(userid) != -1;
+        return GU.isFollowed instanceof Array && GU.isFollowed.indexOf(userid) != -1;
     }
  },
 

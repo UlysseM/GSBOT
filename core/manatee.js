@@ -564,6 +564,11 @@ sendChatMessage: function(msg, cb) {
         if (res.values && res.values[0] && res.values[0].bcastOwner == 1)
         {
             manatee.subToBroadcast(res.values[0].bcast, function(success, ret) {
+                if (!success)
+                {
+                    broadcast(lastbroadcast, cb);
+                    return;
+                }
                 manatee.getQueue().channel = ret[0].params.qc;
                 manatee.getQueue().updatePublisher(ret[0].params.publishers);
                 if (ret[0].params.h && ret[0].params.h.s)
