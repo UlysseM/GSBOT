@@ -8,7 +8,7 @@ var request = require('./core/request.js');
 var GU = {
  user: null,
  pingInterval: null,
- followingList: [],
+ isFollowed: [],
  mods: {},
  
  getLastBroadcast: function(cb) {
@@ -19,8 +19,8 @@ var GU = {
     guest: function(userid) {
         return manatee.getQueue().guests.indexOf(userid) != -1;
     },
-    broadcaster: function(userid) {
-        return GU.followingList.indexOf(userid) != -1;
+    isFollowed: function(userid) {
+        return isFollowed instanceof Array && GU.isFollowed.indexOf(userid) != -1;
     }
  },
 
@@ -34,7 +34,7 @@ var GU = {
         if (regResult != null)
         {
             var mod = GU.mods[regResult[1]];
-            var req = request.onCall(userid, GU.followingList, regResult[3]);
+            var req = request.onCall(userid, GU.isFollowed, regResult[3]);
             // TODO: add functionality for eventSilence toggle that when enabled, will silence all non-guest initaiated output, and turn off auto-queuing.
             if (mod && (!mod.permission || mod.permission.some(function(pname){return GU.permissionList[pname](userid)})))
             {
@@ -95,7 +95,7 @@ var GU = {
             {
                 if (single.IsFavorite === '1')
                 {
-                    GU.followingList.push(parseInt(single.UserID));
+                    GU.isFollowed.push(parseInt(single.UserID));
                 }
             });
         });

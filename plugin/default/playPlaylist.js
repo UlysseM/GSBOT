@@ -5,8 +5,8 @@ var playPlaylist = {
  permission: ['guest'],
  onCall: function(request) {
     // find the playlist id in the command, and error check it.
-    var playlistID = Number(request.params);
-    if (!(Number(playlistID)===playlistID && playlistID%1===0)) {
+    var playlistID = parseInt(request.params);
+    if (!(playlistID > 0)) {
         request.sendChat('There was a problem parsing an ID from your command.');
         return false;
     }
@@ -35,9 +35,6 @@ var playPlaylist = {
             request.sendChat('There was a problem finding any songs for the playlist with ID \'' + playlistID + '\'.');
         }
     });
-    
-
-        
  }
 };
 
