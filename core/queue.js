@@ -231,9 +231,14 @@ Queue.prototype.skip = function() {
 }
 
 Queue.prototype.resetQueue = function(cb) {
-   var songid = [];
-   var queuesongid = [];
-   this.getTracksArray(songid, queuesongid)
+    var songid = [];
+    var queuesongid = [];
+    this.getTracksArray(songid, queuesongid)
+    if (songid.length == 0)
+    {
+        console.log('Cannot force play if the queue is empty');
+        return;
+    }
    this.offsetTrack = 0;
    this.manatee.pub({
         type:"data",
@@ -253,11 +258,6 @@ Queue.prototype.resetQueue = function(cb) {
 
 // Submit to the server the queue we have stored locally
 Queue.prototype.forcePlay = function(cb) {
-    if (songid.length == 0)
-    {
-        console.log('Cannot force play if the queue is empty');
-        return;
-    }
     var manatee = this.manatee;
     var channel = this.channel;
     this.resetQueue(function() {
