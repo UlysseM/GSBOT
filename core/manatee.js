@@ -12,6 +12,7 @@ var manatee = {
  subCallback: {},
  queue: null,
  currentTrack: null,
+ broadcastDesc: '',
  
  // Needs to be set somewhere else.
  callback: {
@@ -295,6 +296,10 @@ sendChatMessage: function(msg, cb) {
                         manatee.callback.OnQueueChange();
                 }
                 break;
+            case 'updateSettings':
+                if (msg.value.settings && msg.value.settings.description)
+                    manatee.broadcastDesc = msg.value.settings.description;
+                break;
             default:
                 console.log("NOT CHECKING " + msg.value.action); // todo
                 break;
@@ -423,13 +428,13 @@ sendChatMessage: function(msg, cb) {
     }
  },
 
- changeBroadcastName: function(newName, cb) {
+ setBroadcastDesc: function(newDesc, cb) {
     manatee.pub({
         "type":"data",
         "value": {
             "action":"updateSettings",
             "settings": {
-                "description":newName,
+                "description":newDesc,
             },
         },
         subs: [{
@@ -439,6 +444,10 @@ sendChatMessage: function(msg, cb) {
         async:false,
         persist:false
     });
+ },
+ 
+ getBroadcastDesc: function() {
+    return manatee.broadcastDesc;
  },
 
  connectQueueToBroadcast: function(lastBroadcast, ownerID, cb) {
@@ -589,15 +598,18 @@ sendChatMessage: function(msg, cb) {
  },
  
  broadcast: function(lastBroadcast, cb) {
+    manatee.broadcastDesc = lastBroadcast.Description;
     manatee.get({keys:["s"],userid:manatee.userInfo.userID}, function(res) {
         if (res.values && res.values[0] && res.values[0].bcastOwner == 1)
         {
             manatee.subToBroadcast(res.values[0].bcast, function(success, ret) {
-                if (!success)
+                if (!success || ret[0].params.qc == undefined)
                 {
                     broadcast(lastbroadcast, cb);
                     return;
                 }
+                manatee.broadcastDesc = ret[0].params.d;
+                console.log("AFTER " + manatee.broadcastDesc);
                 manatee.getQueue().channel = ret[0].params.qc;
                 manatee.getQueue().updatePublisher(ret[0].params.publishers);
                 if (ret[0].params.h && ret[0].params.h.s)
@@ -679,4 +691,6 @@ module.exports = {
  init: manatee.init,
  ping: manatee.ping,
  sendChatMessage: manatee.sendChatMessage,
+ setBroadcastDesc: manatee.setBroadcastDesc,
+ getBroadcastDesc: manatee.getBroadcastDesc
 };

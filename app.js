@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-GLOBAL.GSBOTVERSION = '2.0.4BETA';
+GLOBAL.GSBOTVERSION = '2.0.5BETA';
 
 var grooveshark = require('./core/grooveshark.js');
 var manatee = require('./core/manatee.js')
@@ -25,9 +25,9 @@ var GU = {
     isFollowed: function(userid) {
         return GU.isFollowed.indexOf(userid) != -1;
     },
-	isBroadcaster: function(userid) {
-		return userid == GU.user.userID;
-	},
+    isBroadcaster: function(userid) {
+        return userid == GU.user.userID;
+    },
     isListener: function(userid) {
         return true;
     }
