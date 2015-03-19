@@ -30,6 +30,8 @@ function Queue(manatee) {
     this.currentlyPlayingSong = false;
     // This counts the number of track we are currently adding (aka waiting for callback).
     this.addingTrack = 0;
+    // This represents the queueTrackId of the last song added to the collection.
+    this.lastCollectionQueueTrackId = -1;
     
     // recover the collection
     {
@@ -137,12 +139,12 @@ Queue.prototype.addSongs = function(songsid, cb) {
         that.addingTrack--;
         if (typeof cb == 'function')
             cb(res);
-    });    
+    });
 };
 
 // Ask server to remove song in the array
 Queue.prototype.removeSongs = function(queueSongIDs, cb) {
-    if (queueSongIDs instanceof Array)
+    if (queueSongIDs instanceof Array && queueSongIDs.length)
     {
         this.manatee.pub({
             type:"data",
@@ -173,6 +175,7 @@ Queue.prototype.playRandom = function(cb) {
         return;
     var trackId = Math.floor(Math.random() * this.collection.length);
     this.addSong(this.collection[trackId], cb);
+    this.lastCollectionQueueTrackId = this.availableQueueTrackId - 1;
 }
 
 Queue.prototype.skip = function() {

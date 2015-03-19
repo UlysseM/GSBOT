@@ -43,11 +43,20 @@ Request.prototype.getTracksInQueue = function() {
     return tracksCpy;
 }
 
-Request.prototype.removeSongFromQueue = function(queueSongIDs) {
+Request.prototype.removeSongsFromQueue = function(queueSongIDs) {
     manatee.getQueue().removeSongs(queueSongIDs);
 }
 
+Request.prototype.getLastCollectionQueueTrackId = function() {
+    return manatee.getQueue().lastCollectionQueueTrackId;
+}
+
 /********* CONSTRUCTORS *********/
+
+function defaultConstructor()
+{
+    return new Request();
+}
 
 function onCall(userID, followingList, params)
 {
@@ -59,4 +68,13 @@ function onCall(userID, followingList, params)
     return req;
 }
 
-module.exports = {onCall: onCall};
+function onSongChange(oldSong, oldVote, newSong)
+{
+    var req = new Request();
+    req.oldSong = oldSong;
+    req.oldVote = oldVote;
+    req.newSong = newSong;
+    return req;
+}
+
+module.exports = {defaultConstructor: defaultConstructor, onCall: onCall, onSongChange: onSongChange};

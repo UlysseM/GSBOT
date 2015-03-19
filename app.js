@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+GLOBAL.GSBOTVERSION = '2.0.2BETA';
+
 var grooveshark = require('./core/grooveshark.js');
 var manatee = require('./core/manatee.js')
 var moduleloader = require('./core/moduleloader.js');
@@ -10,6 +12,7 @@ var GU = {
  pingInterval: null,
  isFollowed: [],
  mods: {},
+ modCallback: {},
  
  getLastBroadcast: function(cb) {
     grooveshark.more({method: 'getUserLastBroadcast'}, false, cb);
@@ -50,7 +53,29 @@ var GU = {
                 manatee.sendChatMessage("You do not meet the following permission: " + mod.permission);
             }
         }
-    }
+        if (userid != GU.user.userID)
+        {
+            if (GU.modCallback.onChatMessageRcv.length)
+            {
+                var req = request.onCall(userid, GU.isFollowed, msg);
+                GU.modCallback.onChatMessageRcv.forEach(function(cb){cb(req)});
+            }
+        }
+    },
+    OnSongChange: function(oldSong, oldVote, newSong) {
+        if (GU.modCallback.onSongChange.length)
+        {
+            var req = request.onSongChange(oldSong, oldVote, newSong);
+            GU.modCallback.onSongChange.forEach(function(cb){cb(req)});
+        }
+    },
+    OnQueueChange: function() {
+        if (GU.modCallback.onQueueChange.length)
+        {
+            var req = request.defaultConstructor();
+            GU.modCallback.onQueueChange.forEach(function(cb){cb(req)});
+        }
+    },
  },
 
  // Call the callback with the user as a parameter, or null if the login failed.
@@ -94,11 +119,16 @@ var GU = {
                 GU.isFollowed.push(parseInt(single.UserID));
             });
         });
-    },
+ },
     
  // copy the file from ./core/config.dist to ./config.js
  createConfigFile: function(cb) {
     var fs = require('fs');
+    if (!fs.existsSync('plugin_enabled'))
+    {
+        console.log("Error: You should run the EnablePlugins script !");
+        return;
+    }
     fs.exists('config.js', function(exists) {
         if (exists)
         {
@@ -121,6 +151,7 @@ var GU = {
                 console.log('Logged successfully as ' + userinfo.FName);
                 GU.getFollowing();
                 GU.mods = moduleloader.getList();
+                GU.modCallback = moduleloader.getCallbackList();
                 GU.getLastBroadcast(function(lastBroadcast) {
                     manatee.init(userinfo, GU.manateeCallback, function(boolres) {
                         manatee.broadcast(lastBroadcast, function(success){
