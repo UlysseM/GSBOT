@@ -235,12 +235,9 @@ Queue.prototype.resetQueue = function(cb) {
     var queuesongid = [];
     this.getTracksArray(songid, queuesongid)
     if (songid.length == 0)
-    {
-        console.log('Cannot force play if the queue is empty');
         return;
-    }
-   this.offsetTrack = 0;
-   this.manatee.pub({
+    this.offsetTrack = 0;
+    this.manatee.pub({
         type:"data",
         value: {
             action:"resetQueue",
@@ -258,14 +255,20 @@ Queue.prototype.resetQueue = function(cb) {
 
 // Submit to the server the queue we have stored locally
 Queue.prototype.forcePlay = function(cb) {
+    if (this.tracks.length == 0)
+    {
+        console.log('Cannot force play if the queue is empty');
+        return;
+    }    
     var manatee = this.manatee;
     var channel = this.channel;
+    var firstSongId = this.tracks[0].qid;
     this.resetQueue(function() {
         manatee.pub({
             type:"data",
             value: {
                 action:"playSong",
-                queueSongID: queuesongid[0],
+                queueSongID: firstSongId,
                 country: manatee.gsConfig.country,
                 sourceID:1,
                 streamType:0,
