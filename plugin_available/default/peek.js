@@ -5,9 +5,9 @@ var peek = {
  config: {
     peekNumber: 10,
     peekLimit: 25,
-    peekArtist: false
+    peekArtist: false,
+    permission: ['guest']
  },
- permission: ['guest'],
  onCall: function(request) {
     var tracks = request.getTracksInQueue();
     var str = '';

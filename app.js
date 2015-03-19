@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-GLOBAL.GSBOTVERSION = '2.0.2BETA';
+GLOBAL.GSBOTVERSION = '2.0.3BETA';
 
 var grooveshark = require('./core/grooveshark.js');
 var manatee = require('./core/manatee.js')
@@ -24,6 +24,9 @@ var GU = {
     },
     isFollowed: function(userid) {
         return GU.isFollowed.indexOf(userid) != -1;
+    },
+    isListener: function(userid) {
+        return true;
     }
  },
 
@@ -39,7 +42,11 @@ var GU = {
             var mod = GU.mods[regResult[1]];
             var req = request.onCall(userid, GU.isFollowed, regResult[3]);
             // TODO: add functionality for eventSilence toggle that when enabled, will silence all non-guest initaiated output, and turn off auto-queuing.
-            if (mod && (!mod.permission || mod.permission.some(function(pname){return GU.permissionList[pname](userid)})))
+            if (mod && (!mod.config || !mod.config.permission || mod.config.permission.some(function(pname){
+                if (typeof GU.permissionList[pname] != 'function')
+                    return false;
+                return GU.permissionList[pname](userid);
+            })))
             {
                 try {
                     mod.onCall(req);
@@ -50,7 +57,7 @@ var GU = {
             }
             else if (mod)
             {
-                manatee.sendChatMessage("You do not meet the following permission: " + mod.permission);
+                manatee.sendChatMessage("You do not meet the following permission: " + mod.config.permission);
             }
         }
         if (userid != GU.user.userID)
@@ -58,7 +65,11 @@ var GU = {
             if (GU.modCallback.onChatMessageRcv.length)
             {
                 var req = request.onCall(userid, GU.isFollowed, msg);
-                GU.modCallback.onChatMessageRcv.forEach(function(cb){cb(req)});
+                try {
+                    GU.modCallback.onChatMessageRcv.forEach(function(cb){cb(req)});
+                } catch (err) {
+                    console.log(err.stack)
+                }
             }
         }
     },
@@ -66,14 +77,22 @@ var GU = {
         if (GU.modCallback.onSongChange.length)
         {
             var req = request.onSongChange(oldSong, oldVote, newSong);
-            GU.modCallback.onSongChange.forEach(function(cb){cb(req)});
+            try {
+                GU.modCallback.onSongChange.forEach(function(cb){cb(req)});
+            } catch (err) {
+                console.log(err.stack)
+            }
         }
     },
     OnQueueChange: function() {
         if (GU.modCallback.onQueueChange.length)
         {
             var req = request.defaultConstructor();
-            GU.modCallback.onQueueChange.forEach(function(cb){cb(req)});
+            try {
+                GU.modCallback.onQueueChange.forEach(function(cb){cb(req)});
+            } catch (err) {
+                console.log(err.stack)
+            }
         }
     },
  },

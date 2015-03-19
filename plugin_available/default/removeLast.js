@@ -2,7 +2,9 @@ var removeLast = {
  author: 'uman',
  name: 'removeLast',
  description: '[NUMBER]- Remove the last (NUMBER) song(s) from the queue.',
- permission: ['guest'],
+ config: {
+    permission: ['guest']
+ },
  onCall: function(request) {
     var tracks = request.getTracksInQueue();
     var nbr = 1;

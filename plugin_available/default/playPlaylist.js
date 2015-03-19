@@ -2,7 +2,9 @@ var playPlaylist = {
  author: 'pironic',
  name: 'playPlaylist',
  description: '- add a playlist to the end of the current broadcast queue by the provided playlist ID.',
- permission: ['guest'],
+ config: {
+    permission: ['guest']
+ },
  onCall: function(request) {
     // find the playlist id in the command, and error check it.
     var playlistID = parseInt(request.params);

@@ -2,7 +2,9 @@ var removeNext = {
  author: 'uman',
  name: 'removeNext',
  description: '[NUMBER]- Remove the next (NUMBER) song(s) from the queue.',
- permission: ['guest'],
+ config: {
+    permission: ['guest']
+ },
  onCall: function(request) {
     var tracks = request.getTracksInQueue();
     var nbr = 1;

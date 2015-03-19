@@ -2,7 +2,9 @@ var guest = {
  author: 'uman',
  name: 'guest',
  description: '- Toogle your guest status.',
- permission: ['guest', 'isFollowed'],
+ config: {
+    permission: ['guest', 'isFollowed']
+ },
  onCall: function(request) {
     if (request.isGuest)
         request.makeGuest(request.userID, 0);

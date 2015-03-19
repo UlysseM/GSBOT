@@ -2,7 +2,9 @@ var skip = {
  author: 'uman',
  name: 'skip',
  description: '- Skip the current song.',
- permission: ['guest'],
+ config: {
+    permission: ['guest']
+ },
  onCall: function(request) {
     request.skip();
  }
