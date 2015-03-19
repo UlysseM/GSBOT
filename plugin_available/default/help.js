@@ -2,6 +2,9 @@ var help = {
  author: 'uman',
  name: 'help',
  description: '- Display this help.',
+ config: {
+    permission: ['isListener']
+ },
  mods: {},
  onCall: function(request) {
     if (request.params != undefined)

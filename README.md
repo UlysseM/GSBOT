@@ -27,9 +27,9 @@ Featuring
 
  -If the queue runs out, the bot will just pick a random song from your collection.
 
-✓ An plugin system:
+✓ A plugin system:
 
- -In order to add new feature to the bot, just add a folder in the plugin and restart the bot!
+ -In order to add new feature to the bot, just add a folder in the plugin, run the EnablePlugin script and restart the bot!
 
 Instructions
 ------------
@@ -43,4 +43,4 @@ The first time you run the bot, the "config.js" will appear in your application 
 Plugin support
 ---------
 
-Soon...
+Documentation comming soon, in the meantime, take a look at the folder plugin_abailable/plugin_test.

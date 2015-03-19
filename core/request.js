@@ -36,6 +36,23 @@ Request.prototype.moreCmd = function(obj, cb) {
     grooveshark.more(obj, false, cb);
 }
 
+Request.prototype.shuffle = function() {
+    manatee.getQueue().shuffle();
+}
+
+Request.prototype.moveTrack = function(queueSongId, newRelativePos) {
+    manatee.getQueue().moveTrack(queueSongId, newRelativePos);
+}
+
+Request.prototype.getBroadcastName = function() {
+    return manatee.getBroadcastDesc();
+}
+
+Request.prototype.setBroadcastDesc = function(name) {
+    if (typeof name == 'string')
+        manatee.setBroadcastDesc(name);
+}
+
 Request.prototype.getTracksInQueue = function() {
     var tracksCpy = manatee.getQueue().tracks.slice();
     if (tracksCpy.length)
@@ -43,11 +60,20 @@ Request.prototype.getTracksInQueue = function() {
     return tracksCpy;
 }
 
-Request.prototype.removeSongFromQueue = function(queueSongIDs) {
+Request.prototype.removeSongsFromQueue = function(queueSongIDs) {
     manatee.getQueue().removeSongs(queueSongIDs);
 }
 
+Request.prototype.getLastCollectionQueueTrackId = function() {
+    return manatee.getQueue().lastCollectionQueueTrackId;
+}
+
 /********* CONSTRUCTORS *********/
+
+function defaultConstructor()
+{
+    return new Request();
+}
 
 function onCall(userID, followingList, params)
 {
@@ -59,4 +85,13 @@ function onCall(userID, followingList, params)
     return req;
 }
 
-module.exports = {onCall: onCall};
+function onSongChange(oldSong, oldVote, newSong)
+{
+    var req = new Request();
+    req.oldSong = oldSong;
+    req.oldVote = oldVote;
+    req.newSong = newSong;
+    return req;
+}
+
+module.exports = {defaultConstructor: defaultConstructor, onCall: onCall, onSongChange: onSongChange};

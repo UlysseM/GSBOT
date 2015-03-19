@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+GLOBAL.GSBOTVERSION = '2.0.5BETA';
+
 var grooveshark = require('./core/grooveshark.js');
 var manatee = require('./core/manatee.js')
 var moduleloader = require('./core/moduleloader.js');
@@ -8,19 +10,26 @@ var request = require('./core/request.js');
 var GU = {
  user: null,
  pingInterval: null,
- followingList: [],
+ isFollowed: [],
  mods: {},
- 
+ modCallback: {},
+
  getLastBroadcast: function(cb) {
     grooveshark.more({method: 'getUserLastBroadcast'}, false, cb);
  },
- 
+
  permissionList: {
     guest: function(userid) {
-        return manatee.getQueue().guests.indexOf(userid) != -1;
+        return manatee.getQueue().guests.indexOf(userid) != -1 || GU.permissionList.isBroadcaster(userid); // a broadcaster could be doing everything a guest could do
     },
-    broadcaster: function(userid) {
-        return GU.followingList.indexOf(userid) != -1;
+    isFollowed: function(userid) {
+        return GU.isFollowed.indexOf(userid) != -1;
+    },
+    isBroadcaster: function(userid) {
+        return userid == GU.user.userID;
+    },
+    isListener: function(userid) {
+        return true;
     }
  },
 
@@ -34,9 +43,13 @@ var GU = {
         if (regResult != null)
         {
             var mod = GU.mods[regResult[1]];
-            var req = request.onCall(userid, GU.followingList, regResult[3]);
+            var req = request.onCall(userid, GU.isFollowed, regResult[3]);
             // TODO: add functionality for eventSilence toggle that when enabled, will silence all non-guest initaiated output, and turn off auto-queuing.
-            if (mod && (!mod.permission || mod.permission.some(function(pname){return GU.permissionList[pname](userid)})))
+            if (mod && (!mod.config || !mod.config.permission || mod.config.permission.some(function(pname){
+                if (typeof GU.permissionList[pname] != 'function')
+                    return false;
+                return GU.permissionList[pname](userid);
+            })))
             {
                 try {
                     mod.onCall(req);
@@ -47,10 +60,44 @@ var GU = {
             }
             else if (mod)
             {
-                manatee.sendChatMessage("You do not meet the following permission: " + mod.permission);
+                manatee.sendChatMessage("You do not meet the following permission: " + mod.config.permission);
             }
         }
-    }
+        if (userid != GU.user.userID)
+        {
+            if (GU.modCallback.onChatMessageRcv.length)
+            {
+                var req = request.onCall(userid, GU.isFollowed, msg);
+                try {
+                    GU.modCallback.onChatMessageRcv.forEach(function(cb){cb(req)});
+                } catch (err) {
+                    console.log(err.stack)
+                }
+            }
+        }
+    },
+    OnSongChange: function(oldSong, oldVote, newSong) {
+        if (GU.modCallback.onSongChange.length)
+        {
+            var req = request.onSongChange(oldSong, oldVote, newSong);
+            try {
+                GU.modCallback.onSongChange.forEach(function(cb){cb(req)});
+            } catch (err) {
+                console.log(err.stack)
+            }
+        }
+    },
+    OnQueueChange: function() {
+        if (GU.modCallback.onQueueChange.length)
+        {
+            var req = request.defaultConstructor();
+            try {
+                GU.modCallback.onQueueChange.forEach(function(cb){cb(req)});
+            } catch (err) {
+                console.log(err.stack)
+            }
+        }
+    },
  },
 
  // Call the callback with the user as a parameter, or null if the login failed.
@@ -63,13 +110,13 @@ var GU = {
     var config = require('./config.js');
     var user = config.username;
     var pass = config.password;
-    
+
     if (user == '' || pass == '')
     {
         cb(null);
         return;
     }
-    
+
     var parameters = {method: 'authenticateUser', parameters: {username: user, password: pass}};
     var callback;
     callback = function(message) {
@@ -85,25 +132,25 @@ var GU = {
     };
     grooveshark.more(parameters, true, callback);
  },
-    
+
  getFollowing: function() {
-        grooveshark.more({method: 'userGetFollowersFollowingExt', parameters: {}},
+        grooveshark.more({method: 'getFavorites', parameters: {userID: GU.user.userID, ofWhat: "Users"}},
         false,
-        function(alluser)
-        {
-            alluser.forEach(function(single)
-            {
-                if (single.IsFavorite === '1')
-                {
-                    GU.followingList.push(parseInt(single.UserID));
-                }
+        function(alluser) {
+            alluser.forEach(function(single) {
+                GU.isFollowed.push(parseInt(single.UserID));
             });
         });
-    },
-    
+ },
+
  // copy the file from ./core/config.dist to ./config.js
  createConfigFile: function(cb) {
     var fs = require('fs');
+    if (!fs.existsSync('plugin_enabled'))
+    {
+        console.log("Error: You should run the EnablePlugins script !");
+        return;
+    }
     fs.exists('config.js', function(exists) {
         if (exists)
         {
@@ -117,7 +164,7 @@ var GU = {
         }
     });
  },
-    
+
  init: function() {
     GU.createConfigFile(function() {
         GU.login(function(userinfo) {
@@ -126,6 +173,7 @@ var GU = {
                 console.log('Logged successfully as ' + userinfo.FName);
                 GU.getFollowing();
                 GU.mods = moduleloader.getList();
+                GU.modCallback = moduleloader.getCallbackList();
                 GU.getLastBroadcast(function(lastBroadcast) {
                     manatee.init(userinfo, GU.manateeCallback, function(boolres) {
                         manatee.broadcast(lastBroadcast, function(success){

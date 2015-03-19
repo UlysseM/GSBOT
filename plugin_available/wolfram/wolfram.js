@@ -6,9 +6,10 @@ var wolfram = {
         var http = require('http');
         var config = require('../../config.js');
 
-        if (config.wolframURL.length > 0)          
+        if (typeof config.plugins.wolfram.wolfram.url !== 'undefined'
+            && config.plugins.wolfram.wolfram.url > 0)
         {
-            http.get(config.wolframURL+encodeURIComponent(request.params), function(res) {
+            http.get(config.plugins.wolfram.wolfram.url+encodeURIComponent(request.params), function(res) {
                 console.log("Got response: " + res.statusCode);
                 res.setEncoding('utf8');
                 
