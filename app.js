@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-GLOBAL.GSBOTVERSION = '2.0.3BETA';
+GLOBAL.GSBOTVERSION = '2.0.4BETA';
 
 var grooveshark = require('./core/grooveshark.js');
 var manatee = require('./core/manatee.js')
@@ -20,11 +20,14 @@ var GU = {
 
  permissionList: {
     guest: function(userid) {
-        return manatee.getQueue().guests.indexOf(userid) != -1;
+        return manatee.getQueue().guests.indexOf(userid) != -1 || GU.permissionList.isBroadcaster(userid); // a broadcaster could be doing everything a guest could do
     },
     isFollowed: function(userid) {
         return GU.isFollowed.indexOf(userid) != -1;
     },
+	isBroadcaster: function(userid) {
+		return userid == GU.user.userID;
+	},
     isListener: function(userid) {
         return true;
     }
