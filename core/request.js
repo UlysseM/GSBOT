@@ -36,6 +36,14 @@ Request.prototype.moreCmd = function(obj, cb) {
     grooveshark.more(obj, false, cb);
 }
 
+Request.prototype.shuffle = function() {
+    manatee.getQueue().shuffle();
+}
+
+Request.prototype.moveTrack = function(queueSongId, newRelativePos) {
+    manatee.getQueue().moveTrack(queueSongId, newRelativePos);
+}
+
 Request.prototype.getBroadcastName = function() {
     return manatee.getBroadcastDesc();
 }

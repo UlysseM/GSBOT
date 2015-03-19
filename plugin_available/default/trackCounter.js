@@ -14,8 +14,9 @@ var trackCounter = {
     if (tracksInQueue.length == 0 || tracksInQueue.length && tracksInQueue[tracksInQueue.length - 1].qid == request.getLastCollectionQueueTrackId())
         addStr = ' Playing from collection';
     var bName = request.getBroadcastName();
-    bName = bName.substr(0, bName.indexOf(trackCounter.config.placeAfter)) + trackCounter.config.placeAfter;
-    request.setBroadcastDesc(bName + addStr);
+    addStr = bName.substr(0, bName.indexOf(trackCounter.config.placeAfter)) + trackCounter.config.placeAfter + addStr;
+    if (addStr != bName)
+        request.setBroadcastDesc(addStr);
  },
 };
 

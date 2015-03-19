@@ -274,6 +274,11 @@ sendChatMessage: function(msg, cb) {
                         manatee.getQueue().qDel(song.queueSongID);
                     });
                 }
+                else if (msg.value.type == 'move')
+                {
+                    manatee.getQueue().moveSong(msg.value.songs[0].queueSongID, msg.value.options.index    );
+                    manatee.getQueue().qClean(); // useless just use this for the logs
+                }
                 if (typeof manatee.callback.OnQueueChange == 'function')
                     manatee.callback.OnQueueChange();
                 break;
@@ -283,15 +288,7 @@ sendChatMessage: function(msg, cb) {
             case 'queueReset':
                 if (msg.value.songs)
                 {
-                    this.getQueue().qReset();
-                    if (manatee.getQueue().currentQueueTrackId)
-                    {
-                        var tracks = manatee.getQueue().tracks;
-                        msg.value.songs.forEach(function(song) {
-                            manatee.getQueue().qPush(song.b.sID, song.queueSongID, song.b.sN, song.b.arN, song.b.alN);
-                        });
-                        manatee.getQueue().qClean(); // We want to make sure the broadcast knows what track we are playing.        
-                    }
+                    manatee.getQueue().qAddSongs(msg.value.songs);
                     if (typeof manatee.callback.OnQueueChange == 'function')
                         manatee.callback.OnQueueChange();
                 }
@@ -299,6 +296,11 @@ sendChatMessage: function(msg, cb) {
             case 'updateSettings':
                 if (msg.value.settings && msg.value.settings.description)
                     manatee.broadcastDesc = msg.value.settings.description;
+                break;
+            case undefined:
+            case 'getQueue':
+                if (msg.value.response && msg.value.response.songs)
+                    manatee.getQueue().qAddSongs(msg.value.response.songs);
                 break;
             default:
                 console.log("NOT CHECKING " + msg.value.action); // todo
@@ -499,11 +501,7 @@ sendChatMessage: function(msg, cb) {
                 manatee.getQueue().qReset();
                 if (manatee.getQueue().currentQueueTrackId)
                 {
-                    var tracks = manatee.getQueue().tracks;
-                    data.value.response.songs.forEach(function(song) {
-                        manatee.getQueue().qPush(song.b.sID, song.queueSongID, song.b.sN, song.b.arN, song.b.alN);
-                    });
-                    manatee.getQueue().qClean(); // We want to make sure the broadcast knows what track we are playing.
+                    manatee.getQueue().qAddSongs(data.value.response.songs);
                 }
                 if (typeof manatee.callback.OnQueueChange == 'function')
                     manatee.callback.OnQueueChange();
