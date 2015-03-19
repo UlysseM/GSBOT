@@ -13,11 +13,11 @@ var GU = {
  isFollowed: [],
  mods: {},
  modCallback: {},
- 
+
  getLastBroadcast: function(cb) {
     grooveshark.more({method: 'getUserLastBroadcast'}, false, cb);
  },
- 
+
  permissionList: {
     guest: function(userid) {
         return manatee.getQueue().guests.indexOf(userid) != -1;
@@ -88,13 +88,13 @@ var GU = {
     var config = require('./config.js');
     var user = config.username;
     var pass = config.password;
-    
+
     if (user == '' || pass == '')
     {
         cb(null);
         return;
     }
-    
+
     var parameters = {method: 'authenticateUser', parameters: {username: user, password: pass}};
     var callback;
     callback = function(message) {
@@ -110,7 +110,7 @@ var GU = {
     };
     grooveshark.more(parameters, true, callback);
  },
-    
+
  getFollowing: function() {
         grooveshark.more({method: 'getFavorites', parameters: {userID: GU.user.userID, ofWhat: "Users"}},
         false,
@@ -120,7 +120,7 @@ var GU = {
             });
         });
  },
-    
+
  // copy the file from ./core/config.dist to ./config.js
  createConfigFile: function(cb) {
     var fs = require('fs');
@@ -142,7 +142,7 @@ var GU = {
         }
     });
  },
-    
+
  init: function() {
     GU.createConfigFile(function() {
         GU.login(function(userinfo) {

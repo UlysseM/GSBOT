@@ -17,7 +17,7 @@ var rl = readline.createInterface({
 function install(directory, cb)
 {
     var dest = path.resolve(enabled_folder, directory);
-    var origin = path.resolve(available_folder, directory);    
+    var origin = path.resolve(available_folder, directory);
     fs.symlinkSync(origin, dest);
     console.log("Installed " + directory + " successfully!");
 
@@ -48,7 +48,7 @@ function promptInstall(installList, cb)
             else
             {
                 console.log("Please answer Y or N.");
-                promptInstall(installList, cb);                
+                promptInstall(installList, cb);
             }
         });
     }
@@ -66,13 +66,13 @@ fs.readdir(available_folder, function(err, moduledirs) {
     }
     else
         fs.mkdirSync(enabled_folder);
-    
+
     moduledirs.forEach(function(module) {
         moduledir = path.resolve(available_folder, module);
         if (fs.statSync(moduledir).isDirectory())
             plugins.push(module);
     });
-    
+
     promptInstall(plugins, function(){
         console.log('Configuration completed, enjoy!')
         rl.close();

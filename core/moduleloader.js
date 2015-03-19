@@ -7,10 +7,19 @@ var moduleLoader = {
     onSongChange: []
  },
 
- loadModule: function(path) {
+ loadModule: function(path, pluginname, config) {
     var module = require(path);
     if (module.mod && typeof module.mod.name == 'string')
     {
+        if (module.mod.config && config.plugins && config.plugins[pluginname] && config.plugins[pluginname][module.mod.name])
+        {
+            var modConfig = module.mod.config;
+            var userconfig = config.plugins[pluginname][module.mod.name];
+            Object.keys(modConfig).forEach(function(key) {
+                if (userconfig[key])
+                    modConfig[key] = userconfig[key];
+            });
+        }
         var init = false;
         if (typeof module.mod.onCall == 'function')
         {
@@ -41,9 +50,10 @@ var moduleLoader = {
     var path = require('path');
 
     var modpath = path.resolve('.', 'plugin_enabled');
+    var config = require('../config.js');
     fs.readdir(modpath, function(err, moduledirs) {
-        moduledirs.forEach(function(moduledir) {
-            moduledir = path.resolve(modpath, moduledir);
+        moduledirs.forEach(function(pluginname) {
+            var moduledir = path.resolve(modpath, pluginname);
             fs.lstat(moduledir, function(err, stat) {
                 var mDir;
                 if (stat.isDirectory())
@@ -57,7 +67,7 @@ var moduleLoader = {
                         file = path.resolve(mDir, file);
                         fs.stat(file, function(err, stat) {
                             if (stat.isFile())
-                                moduleLoader.loadModule(file);
+                                moduleLoader.loadModule(file, pluginname, config);
                         });
                     });
                 });
