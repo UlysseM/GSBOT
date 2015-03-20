@@ -603,7 +603,7 @@ sendChatMessage: function(msg, cb) {
             manatee.subToBroadcast(res.values[0].bcast, function(success, ret) {
                 if (!success || ret[0].params.qc == undefined)
                 {
-                    broadcast(lastbroadcast, cb);
+                    broadcast(lastBroadcast, cb);
                     return;
                 }
                 manatee.broadcastDesc = ret[0].params.d;
