@@ -2,24 +2,27 @@ var wolfram = {
  author: 'pironic',
  name: 'wa',
  description: '- ask the bot a question, via Wolfram|Alpha.',
+ config: {
+     permission: ['isListener']
+ },
  onCall: function(request) {
-        var http = require('http');
-        var config = require('../../config.js');
+    var http = require('http');
+    var config = require('../../config.js');
 
-        if (typeof config.plugins.wolfram.wolfram.url !== 'undefined'
-            && config.plugins.wolfram.wolfram.url > 0)
-        {
-            http.get(config.plugins.wolfram.wolfram.url+encodeURIComponent(request.params), function(res) {
-                console.log("Got response: " + res.statusCode);
-                res.setEncoding('utf8');
-                
-                res.on('data', function (chunk) {
-                    request.sendChat(chunk);
-                });                
-            }).on('error', function(e) {
-                request.sendChat("Got error: " + e.message);
+    if (typeof config.plugins.wolfram.wolfram.url !== 'undefined'
+        && config.plugins.wolfram.wolfram.url.length > 0)
+    {
+        http.get(config.plugins.wolfram.wolfram.url+encodeURIComponent(request.params), function(res) {
+            console.log("Got response: " + res.statusCode);
+            res.setEncoding('utf8');
+
+            res.on('data', function (chunk) {
+                request.sendChat(chunk);
             });
-        }    
+        }).on('error', function(e) {
+            request.sendChat("Got error: " + e.message);
+        });
+    }
  }
 };
 
