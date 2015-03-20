@@ -40,31 +40,31 @@ Instructions
 
 -Configuration
 
-    -Make sure you have nodejs installed (and 'node' in your path).
+  -Make sure you have nodejs installed (and 'node' in your path).
 
-        -You can get it from here https://nodejs.org/download/
+    -You can get it from here https://nodejs.org/download/
 
-    -Before starting the bot, run the script "EnablePlugins", by going over the windows or posix file.
+  -Before starting the bot, run the script "EnablePlugins", by going over the windows or posix file.
 
-        -If you are on windows, it will ask you for admin rights, and this will only work if you are on an NTFS filesystem. A workaround would be to copy the plugins you want to start from the "plugin_available" to the "plugin_enabled" directory.
+    -If you are on windows, it will ask you for admin rights, and this will only work if you are on an NTFS filesystem. A workaround would be to copy the plugins you want to start from the "plugin_available" to the "plugin_enabled" directory.
 
-        -You will be prompted a list of plugin available, if you wish to install those, press 'y' and 'enter', if you do not, press 'n'.
+    -You will be prompted a list of plugin available, if you wish to install those, press 'y' and 'enter', if you do not, press 'n'.
 
-        -If you want a "raw" experience, just install the "default" one.
+    -If you want a "raw" experience, just install the "default" one.
 
-        -The "plugin_test" is only here to show the functionalities of the bot to devs. It is NOT intended to run in production.
+    -The "plugin_test" is only here to show the functionalities of the bot to devs. It is NOT intended to run in production.
 
-    -Start the program a first time
+  -Start the program a first time
 
-        -if you are not familiar with command line interfaces, just click on the "WindowsStart.bat" or "PosixStart.sh" depending on your operating system.
+    -if you are not familiar with command line interfaces, just click on the "WindowsStart.bat" or "PosixStart.sh" depending on your operating system.
 
-        -Launching the program a first time will add the file "config.js" in your directory, just fill the username and password!
+    -Launching the program a first time will add the file "config.js" in your directory, just fill the username and password!
 
 -Start the bot and enjoy!
 
-    -It will create a broadcast based on your last one, or take over the current one.
+  -It will create a broadcast based on your last one, or take over the current one.
 
-    -With the current version of grooveshark, you can still log in as a broadcaster to broadcast. The queue will be shared between your session and the bot.
+  -With the current version of grooveshark, you can still log in as a broadcaster to broadcast. The queue will be shared between your session and the bot.
 
 Plugin support & Configuration
 ------------------------------
@@ -83,7 +83,7 @@ Each module should contain its own default configuration, located under the key 
 
 Each configuration parameter can be individually overwritten by the config file.
 
-For instance, the module 'peek' in the plugin 'default' has the following configuration:
+For instance, the module '[peek](plugin_available/default/peek.js)' in the plugin 'default' has the following configuration:
 ```javascript
  config: {
     peekNumber: 10,
@@ -113,46 +113,46 @@ module.exports = {
 
 ```
 
-Note that on this example, the value of trackCounter's placeAfter was set to '{GS Bot}' (by default, it is at null).
+Note that on this example, the value of [trackCounter](plugin_available/default/trackCounter.js)'s placeAfter was set to '{GS Bot}' (by default, it is at null).
 
 Setting it to a value will allow it to be active (editing the broadcast description to tell you how many tracks are left in the queue). You can see it in action at http://grooveshark.com/#!/masterofsoundtrack/broadcast/current/overview
 
 ### Development
 
-The Grooveshark API might be subject to change, as well as this code. There is a strict separation between the core of the program that talks to grooveshark and the plugins. The interface is defined by the file core/request.js.
+The Grooveshark API might be subject to change, as well as this code. There is a strict separation between the core of the program that talks to grooveshark and the plugins. The interface is defined by the file [core/request.js](core/request.js).
 
 You mustn't use the "require" function to include something other than other file from your plugin. If you cannot do something, you may ask for an API update in the bug tracker.
 
 In order to be called back when you want to do some work, your module can implement one (or many) of these functions:
 
-    -onCall: will be called when a user (with the right permissions) will run a "/YOURMODULENAME".
+-onCall: will be called when a user (with the right permissions) will run a "/YOURMODULENAME".
 
-        -The object passed as a parameter will be a "request" object, filled with:
+  -The object passed as a parameter will be a "request" object, filled with:
 
-            -'userID' the id of the user that calls the function.
+    -'userID' the id of the user that calls the function.
 
-            -'isGuest' a boolean telling whether the user is a guest.
+    -'isGuest' a boolean telling whether the user is a guest.
 
-            -'isFollowing' a bollean telling whether the user is being followed by you.
+    -'isFollowing' a bollean telling whether the user is being followed by you.
 
-            -'params' the rest of the string after "/YOURMODULENAME", or undefined if empty.
+    -'params' the rest of the string after "/YOURMODULENAME", or undefined if empty.
 
-    -onChatMessageRcv: Will be called whenever any user other than the broadcaster writes something in the chat.
+-onChatMessageRcv: Will be called whenever any user other than the broadcaster writes something in the chat.
 
-        -The object passed as a parameter will be a request object, with the same parameters as 'onCall'.
+  -The object passed as a parameter will be a request object, with the same parameters as 'onCall'.
 
-    -onSongChange: will be called when the a new song is being played.
+-onSongChange: will be called when the a new song is being played.
 
-        -The object passed as a parameter will be a "request" object, filled with:
+  -The object passed as a parameter will be a "request" object, filled with:
 
-            -'oldSong' an object containing all the info (name, id, artist, artistid, album, albumid, etc.) from the song that just ended.
+    -'oldSong' an object containing all the info (name, id, artist, artistid, album, albumid, etc.) from the song that just ended.
 
-            -'oldVote' an object containing all the votes from the song that just ended.
+    -'oldVote' an object containing all the votes from the song that just ended.
 
-            -'newSong' an object containing all the info about the song from the song that just started.
+    -'newSong' an object containing all the info about the song from the song that just started.
 
-    -onQueueChange: will be called when the queue is getting updated.
+-onQueueChange: will be called when the queue is getting updated.
 
-        -The object passed as a parameter will be an empty "request" object.
+  -The object passed as a parameter will be an empty "request" object.
 
-        -Note that they may be false positive (callback called with no queue modification).
+  -Note that they may be false positive (callback called with no queue modification).
