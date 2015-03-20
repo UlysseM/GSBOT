@@ -276,8 +276,7 @@ sendChatMessage: function(msg, cb) {
                 }
                 else if (msg.value.type == 'move')
                 {
-                    manatee.getQueue().moveSong(msg.value.songs[0].queueSongID, msg.value.options.index    );
-                    manatee.getQueue().qClean(); // useless just use this for the logs
+                    manatee.getQueue().moveSongs(msg.value.songs, msg.value.options.index);
                 }
                 if (typeof manatee.callback.OnQueueChange == 'function')
                     manatee.callback.OnQueueChange();
