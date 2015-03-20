@@ -8,7 +8,7 @@ The Grooveshark Broadcast Bot (GS Bot) is designed to let you run a collaborativ
 IMPORTANT
 ---------
 
-Grooveshark just updated their service, the bot is moving from a webbrowser extension to a standalone nodejs app. 
+Grooveshark just updated their service, the bot is moving from a webbrowser extension to a standalone nodejs app.
 
 Due to the complete refactoring, **this is a BETA version, expect bugs, crashes, and other annoyances**. If you want to create your own plugins, please open a ticket so we can discuss the easier way to implement it.
 
@@ -22,11 +22,11 @@ Featuring
 ✓ An automatic takeover feature:
 
  -Can easily takeover your broadcast, without having to disconnect all your listeners. If you don't have a broadcast running, no worries, it will copy the settings of your last broadcast.
- 
+
 ✓ A never ending broadcast:
 
  -If the queue runs out, the bot will just pick a random song from your collection.
- 
+
 ✓ A plugin system:
 
  -In order to add new features to the bot, just add a folder in the plugin, run the EnablePlugin script and restart the bot!
@@ -34,24 +34,36 @@ Featuring
 ✓ An advanced configuration system:
 
  -The configuration file allows you to overload any "config" parameters builtin to a module. This can go from the permission on who can start a command, to the way the command works. No worry though, the default settings (which will be sufficient for most) do not require ANY configuration!
- 
+
 Instructions
 ------------
 
 -Configuration
+
     -Make sure you have nodejs installed (and 'node' in your path).
+
         -You can get it from here https://nodejs.org/download/
+
     -Before starting the bot, run the script "EnablePlugins", by going over the windows or posix file.
+
         -If you are on windows, it will ask you for admin rights, and this will only work if you are on an NTFS filesystem. A workaround would be to copy the plugins you want to start from the "plugin_available" to the "plugin_enabled" directory.
+
         -You will be prompted a list of plugin available, if you wish to install those, press 'y' and 'enter', if you do not, press 'n'.
+
         -If you want a "raw" experience, just install the "default" one.
+
         -The "plugin_test" is only here to show the functionalities of the bot to devs. It is NOT intended to run in production.
+
     -Start the program a first time
+
         -if you are not familiar with command line interfaces, just click on the "WindowsStart.bat" or "PosixStart.sh" depending on your operating system.
+
         -Launching the program a first time will add the file "config.js" in your directory, just fill the username and password!
 
 -Start the bot and enjoy!
+
     -It will create a broadcast based on your last one, or take over the current one.
+
     -With the current version of grooveshark, you can still log in as a broadcaster to broadcast. The queue will be shared between your session and the bot.
 
 Plugin support & Configuration
@@ -112,19 +124,35 @@ The Grooveshark API might be subject to change, as well as this code. There is a
 You mustn't use the "require" function to include something other than other file from your plugin. If you cannot do something, you may ask for an API update in the bug tracker.
 
 In order to be called back when you want to do some work, your module can implement one (or many) of these functions:
+
     -onCall: will be called when a user (with the right permissions) will run a "/YOURMODULENAME".
+
         -The object passed as a parameter will be a "request" object, filled with:
+
             -'userID' the id of the user that calls the function.
+
             -'isGuest' a boolean telling whether the user is a guest.
+
             -'isFollowing' a bollean telling whether the user is being followed by you.
+
             -'params' the rest of the string after "/YOURMODULENAME", or undefined if empty.
+
     -onChatMessageRcv: Will be called whenever any user other than the broadcaster writes something in the chat.
+
         -The object passed as a parameter will be a request object, with the same parameters as 'onCall'.
+
     -onSongChange: will be called when the a new song is being played.
+
         -The object passed as a parameter will be a "request" object, filled with:
+
             -'oldSong' an object containing all the info (name, id, artist, artistid, album, albumid, etc.) from the song that just ended.
+
             -'oldVote' an object containing all the votes from the song that just ended.
+
             -'newSong' an object containing all the info about the song from the song that just started.
+
     -onQueueChange: will be called when the queue is getting updated.
+
         -The object passed as a parameter will be an empty "request" object.
+
         -Note that they may be false positive (callback called with no queue modification).

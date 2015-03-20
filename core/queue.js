@@ -12,7 +12,7 @@ function Queue(manatee) {
     var md5sum = require('crypto').createHash('md5');
     md5sum.update(manatee.userInfo.userID + Date.now() + "");
     this.channel = md5sum.digest('hex');
-    
+
     // If we can't load the collection soon enough for some reason, we have at least one song to start the broadcast with...
     this.collection = [25032044];
     // The list of current Guest
@@ -32,7 +32,7 @@ function Queue(manatee) {
     this.addingTrack = 0;
     // This represents the queueTrackId of the last song added to the collection.
     this.lastCollectionQueueTrackId = -1;
-    
+
     // recover the collection
     {
         var params = {method:'userGetSongIDsInLibrary',parameters: {}};
@@ -145,7 +145,7 @@ Queue.prototype.addSongs = function(songsid, cb) {
 Queue.prototype.shuffle = function(cb) {
     if (this.tracks.length == 0)
         return;
-    
+
     var m = this.tracks.length - 1, t, i;
     // While there remain elements to shuffle…
     while (m) {
@@ -168,7 +168,7 @@ Queue.prototype.removeSongs = function(queueSongIDs, cb) {
             value: {
                 "action":"removeSongs",
                 "queueSongIDs":queueSongIDs,
-                
+
             },
             subs: [{
                 type:"sub",
@@ -215,7 +215,7 @@ Queue.prototype.skip = function() {
                     prefetch:false,
                     country: this.manatee.gsConfig.country,
                     type:0,
-                    songID:this.tracks[1].id 
+                    songID:this.tracks[1].id
                 },
                 fastFetch:false
             }
@@ -251,7 +251,7 @@ Queue.prototype.resetQueue = function(cb) {
         async:false,
         persist:false
     }, cb);
-} 
+}
 
 // Submit to the server the queue we have stored locally
 Queue.prototype.forcePlay = function(cb) {
@@ -259,7 +259,7 @@ Queue.prototype.forcePlay = function(cb) {
     {
         console.log('Cannot force play if the queue is empty');
         return;
-    }    
+    }
     var manatee = this.manatee;
     var channel = this.channel;
     var firstSongId = this.tracks[0].qid;
@@ -375,7 +375,7 @@ Queue.prototype.moveSong = function(qid, newIdx)
         {
             if (i == 0) // special case where we are moving the current song
             {
-                if (newIdx > this.offsetTrack) // if we are moving the current song AFTER, we are dropping all the songs 
+                if (newIdx > this.offsetTrack) // if we are moving the current song AFTER, we are dropping all the songs
                 {
                     this.tracks.splice(1, newIdx - this.offsetTrack - 1);
                     this.offsetTrack = newIdx;

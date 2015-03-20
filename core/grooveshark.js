@@ -6,7 +6,7 @@ var grooveshark = {
  secret: 'nuggetsOfBaller',
  url: 'grooveshark.com',
  tokenData: null,
- 
+
  genToken: function(method, tokenData) {
     var salt = '';
     var hex = '0123456789abcdef';
@@ -17,7 +17,7 @@ var grooveshark = {
     return salt + shasum.digest('hex');
  },
 
- // The callback will be called with the headers in the first param, and the body in the 
+ // The callback will be called with the headers in the first param, and the body in the
  callback: function(res, cb) {
     var ret = '';
     res.on('data', function(chunk) { ret += chunk; });
@@ -77,7 +77,7 @@ var grooveshark = {
             method: obj.method,
             parameters: obj.parameters
         };
-        
+
         var request = (secure ? require('https') : require('http')).request(options, function(res){grooveshark.callbackJson(res, cb);});
         request.write(JSON.stringify(payload));
         request.end();

@@ -12,24 +12,24 @@ var playPlaylist = {
         request.sendChat('There was a problem parsing an ID from your command.');
         return false;
     }
-    
+
     // start by getting the songs in the playlist
     var payload = {"method":"playlistGetSongs","parameters":{"playlistID": playlistID}};
     request.moreCmd(payload, function(resp) {
-        
+
         // make sure there are songs in the playlist and its a valid playlist
         if (typeof resp.Songs !== 'undefined') {
             var songs = resp.Songs;
-            
+
             // get a list of songIDs from the list of songs in the playlist
             var songIDs = [];
             for (i = 0;i < songs.length;i++) {
                 songIDs.push(songs[i].SongID);
             }
-            
+
             // add that list to the queue.
             request.addSongs(songIDs);
-            
+
             // tell the user of our success
             request.sendChat(songs.length+' songs added to the queue from Playlist: \'' + playlistID + '\'.');
         }

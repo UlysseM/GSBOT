@@ -10,7 +10,7 @@ var ping = {
     var strAccess = " isListener";
     if (request.isGuest) {
         strAccess += ", isGuest";
-    }    
+    }
     if (request.isFollowing) {
         strAccess += ", isFollowed";
     }
