@@ -41,7 +41,11 @@ Request.prototype.shuffle = function() {
 }
 
 Request.prototype.moveTrack = function(queueSongId, newRelativePos) {
-    manatee.getQueue().moveTrack(queueSongId, newRelativePos);
+    manatee.getQueue().moveTracks([queueSongId], newRelativePos);
+}
+
+Request.prototype.moveTracks = function(queueSongIds, newRelativePos) {
+    manatee.getQueue().moveTracks(queueSongIds, newRelativePos);
 }
 
 Request.prototype.getBroadcastName = function() {

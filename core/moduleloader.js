@@ -83,7 +83,7 @@ var moduleLoader = {
 
  getCallbackList: function() {
     moduleLoader.init();
-    return moduleLoader.callback; 
+    return moduleLoader.callback;
  }
 };
 

@@ -12,7 +12,7 @@ function Queue(manatee) {
     var md5sum = require('crypto').createHash('md5');
     md5sum.update(manatee.userInfo.userID + Date.now() + "");
     this.channel = md5sum.digest('hex');
-    
+
     // If we can't load the collection soon enough for some reason, we have at least one song to start the broadcast with...
     this.collection = [25032044];
     // The list of current Guest
@@ -32,7 +32,7 @@ function Queue(manatee) {
     this.addingTrack = 0;
     // This represents the queueTrackId of the last song added to the collection.
     this.lastCollectionQueueTrackId = -1;
-    
+
     // recover the collection
     {
         var params = {method:'userGetSongIDsInLibrary',parameters: {}};
@@ -145,7 +145,7 @@ Queue.prototype.addSongs = function(songsid, cb) {
 Queue.prototype.shuffle = function(cb) {
     if (this.tracks.length == 0)
         return;
-    
+
     var m = this.tracks.length - 1, t, i;
     // While there remain elements to shuffle…
     while (m) {
@@ -168,7 +168,7 @@ Queue.prototype.removeSongs = function(queueSongIDs, cb) {
             value: {
                 "action":"removeSongs",
                 "queueSongIDs":queueSongIDs,
-                
+
             },
             subs: [{
                 type:"sub",
@@ -182,6 +182,7 @@ Queue.prototype.removeSongs = function(queueSongIDs, cb) {
         cb(false);
 }
 
+// Ask the server to play a random track from the collection
 Queue.prototype.playRandom = function(cb) {
     if (this.collection.length == 0)
     {
@@ -195,6 +196,7 @@ Queue.prototype.playRandom = function(cb) {
     this.lastCollectionQueueTrackId = this.availableQueueTrackId - 1;
 }
 
+// Ask the server to skip the current song
 Queue.prototype.skip = function() {
     if (this.tracks.length <= 1)
         return false;
@@ -215,7 +217,7 @@ Queue.prototype.skip = function() {
                     prefetch:false,
                     country: this.manatee.gsConfig.country,
                     type:0,
-                    songID:this.tracks[1].id 
+                    songID:this.tracks[1].id
                 },
                 fastFetch:false
             }
@@ -230,12 +232,33 @@ Queue.prototype.skip = function() {
     return true;
 }
 
+// Ask the server to move tracks at some relative position, 0 being the song after the current being played.
+Queue.prototype.moveTracks = function(queueSongIds, relativeIndex, cb) {
+    this.manatee.pub({
+        type:"data",
+        value: {
+            action:"moveSongs",
+            queueSongIDs:queueSongIds,
+            index:relativeIndex + this.offsetTrack + 1
+        },
+        subs: [{
+            type:"sub",
+            name:this.channel
+        }],
+        async:false,
+        persist:false
+    }, cb);
+}
+
+// Send OUR VERSION of the queue to the server.
 Queue.prototype.resetQueue = function(cb) {
-   var songid = [];
-   var queuesongid = [];
-   this.getTracksArray(songid, queuesongid)
-   this.offsetTrack = 0;
-   this.manatee.pub({
+    var songid = [];
+    var queuesongid = [];
+    this.getTracksArray(songid, queuesongid)
+    if (songid.length == 0)
+        return;
+    this.offsetTrack = 0;
+    this.manatee.pub({
         type:"data",
         value: {
             action:"resetQueue",
@@ -249,23 +272,24 @@ Queue.prototype.resetQueue = function(cb) {
         async:false,
         persist:false
     }, cb);
-} 
+}
 
 // Submit to the server the queue we have stored locally
 Queue.prototype.forcePlay = function(cb) {
-    if (songid.length == 0)
+    if (this.tracks.length == 0)
     {
         console.log('Cannot force play if the queue is empty');
         return;
     }
     var manatee = this.manatee;
     var channel = this.channel;
+    var firstSongId = this.tracks[0].qid;
     this.resetQueue(function() {
         manatee.pub({
             type:"data",
             value: {
                 action:"playSong",
-                queueSongID: queuesongid[0],
+                queueSongID: firstSongId,
                 country: manatee.gsConfig.country,
                 sourceID:1,
                 streamType:0,
@@ -285,9 +309,7 @@ Queue.prototype.forcePlay = function(cb) {
 // Add to the local queue a track with its index
 Queue.prototype.qAdd = function(trackId, queueid, index, name, artist, album) {
     // If the track with the queueid is in the list, remove it (as we might move it)
-    var posInQueue = -1;
-    if (this.tracks.some(function(t){++posInQueue;return t.qid == queueid;}))
-        this.tracks.splice(posInQueue);
+    this.qDel(queueid);
 
     var relativeIndex = index - this.offsetTrack;
     this.tracks.splice(relativeIndex, 0, {id: trackId, qid: queueid, sN:name, arN: artist, alN: album});
@@ -302,14 +324,9 @@ Queue.prototype.qPush = function(trackId, queueid, name, artist, album) {
 
 // Delete from the local queue
 Queue.prototype.qDel = function(queueid) {
-    for (var i = 0; i < this.tracks.length; ++i)
-    {
-        if (this.tracks[i].qid == queueid)
-        {
-            this.tracks.splice(i, 1);
-            return;
-        }
-    }
+    var idx = this.findQidIdx(queueid);
+    if (idx != -1)
+        this.tracks.splice(idx, 1);
 }
 
 // Remove all tracks previously played from the local queue
@@ -364,36 +381,35 @@ Queue.prototype.pushAvailableQueueTrackId = function(id) {
         this.availableQueueTrackId = id + 1;
 }
 
-Queue.prototype.moveSong = function(qid, newIdx)
-{
+Queue.prototype.findQidIdx = function(qid) {
     for (var i = 0; i < this.tracks.length; ++i)
+        if (qid == this.tracks[i].qid)
+            return i;
+    return -1;
+}
+
+Queue.prototype.moveSongs = function(tracks, newIdx)
+{
+    var arrTrack = [];
+    newIdx -= this.offsetTrack;
+    for (var i = 0; i < tracks.length; ++i)
     {
-        if (this.tracks[i].qid == qid)
+        var tPos = this.findQidIdx(tracks[i].queueSongID);
+        if (tPos <= 0)
         {
-            if (i == 0) // special case where we are moving the current song
-            {
-                if (newIdx > this.offsetTrack) // if we are moving the current song AFTER, we are dropping all the songs 
-                {
-                    this.tracks.splice(1, newIdx - this.offsetTrack - 1);
-                    this.offsetTrack = newIdx;
-                    return;
-                }
-                else // we need to update the queue from the server...
-                {
-                    break;
-                }
-            }
-            var track = this.tracks[i];
-            console.log(track);
-            this.tracks.splice(i, 1);
-            if (i < newIdx - this.offsetTrack)
-                newIdx -= 1;
-            this.tracks.splice(newIdx - this.offsetTrack, 0, track);
+            this.askSync(); // the track is nowhere to be found OF is the current track playing.
             return;
         }
+        arrTrack.push(this.tracks[tPos])
+        if (newIdx > tPos)
+            newIdx -= 1;
+        this.tracks.splice(tPos, 1);
     }
-    // if the index is moved backward OR if a played song is moved forward, we need to refresh the queue from the server.
-    this.askSync();
+    if (newIdx < 1)
+    {
+        return; // I guess those songs were just removed.
+    }
+    this.tracks.splice.apply(this.tracks, [newIdx, 0].concat(arrTrack));
 }
 
 Queue.prototype.askSync = function() {
@@ -425,23 +441,6 @@ Queue.prototype.updatePublisher = function(publishers) {
 // Get the last Index from the queue
 Queue.prototype.getLastIndex = function() {
     return this.tracks.length + this.offsetTrack;
-}
-
-Queue.prototype.moveTrack = function(queueSongId, relativeIndex, cb) {
-    this.manatee.pub({
-        type:"data",
-        value: {
-            action:"moveSongs",
-            queueSongIDs:[queueSongId],
-            index:relativeIndex + this.offsetTrack
-        },
-        subs: [{
-            type:"sub",
-            name:this.channel
-        }],
-        async:false,
-        persist:false
-    }, cb);
 }
 
 module.exports = {Queue: Queue};

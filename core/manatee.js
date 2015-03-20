@@ -13,7 +13,7 @@ var manatee = {
  queue: null,
  currentTrack: null,
  broadcastDesc: '',
- 
+
  // Needs to be set somewhere else.
  callback: {
     OnSocketClose: null,
@@ -21,7 +21,7 @@ var manatee = {
     OnSongChange: null,
     OnQueueChange: null
  },
- 
+
  getQueue: function() {
     if (!manatee.queue)
     {
@@ -30,7 +30,7 @@ var manatee = {
     }
     return manatee.queue;
  },
- 
+
  manateeCallBackOnMessage: function(message) {
      console.log("\033[31m" + JSON.stringify(message) + '\033[0m');
     if (message.blackbox && message.blackbox._cid)
@@ -84,7 +84,7 @@ var manatee = {
         manatee.rebuildData();
     }
  },
- 
+
  getSocket: function(cb) {
     if (manatee.manateeSocket)
     {
@@ -104,12 +104,12 @@ var manatee = {
                     if (manatee.callback.OnSocketClose)
                         manatee.callback.OnSocketClose();
                 });
-                cb(manatee.manateeSocket);                
+                cb(manatee.manateeSocket);
             });
         });
     }
  },
- 
+
  sendManateeMessage: function (command, params, cb) {
      manatee.getSocket(function (socket) {
         var blackboxId = ++manatee.blackboxId;
@@ -119,7 +119,7 @@ var manatee = {
         socket.write(msg+"\n");
     });
  },
- 
+
  // login matinee
  identify: function (cb) {
     manatee.sendManateeMessage('identify', {
@@ -141,7 +141,7 @@ var manatee = {
         }
     });
  },
- 
+
  set: function(params, cb) {
     manatee.sendManateeMessage('set', params, function (message) {
         if (typeof cb === 'function')
@@ -157,7 +157,7 @@ var manatee = {
         }
     });
  },
- 
+
  sub: function(params, callback_on_push, cb) {
     manatee.sendManateeMessage('sub', {
         add:true,
@@ -195,14 +195,14 @@ var manatee = {
     manatee.sendManateeMessage('pub', params, function (message) {
         if (typeof cb === 'function')
             cb(message.type == 'success' || (message.type == 'return' && message.return[0].return == 'success'));
-    }); 
+    });
  },
- 
+
  get: function(params, cb) {
     if (typeof cb === 'function')
         manatee.sendManateeMessage('get', params, function (message) {
             cb(message.return);
-        }); 
+        });
  },
 
 sendChatMessage: function(msg, cb) {
@@ -276,8 +276,7 @@ sendChatMessage: function(msg, cb) {
                 }
                 else if (msg.value.type == 'move')
                 {
-                    manatee.getQueue().moveSong(msg.value.songs[0].queueSongID, msg.value.options.index    );
-                    manatee.getQueue().qClean(); // useless just use this for the logs
+                    manatee.getQueue().moveSongs(msg.value.songs, msg.value.options.index);
                 }
                 if (typeof manatee.callback.OnQueueChange == 'function')
                     manatee.callback.OnQueueChange();
@@ -403,7 +402,7 @@ sendChatMessage: function(msg, cb) {
         ], [manatee.broadcastCallback, manatee.broadcastChatCallback], cb);
     }
  },
- 
+
  userCallback: function(type, msg) {
     console.log('{user callback}');
     switch (type)
@@ -447,7 +446,7 @@ sendChatMessage: function(msg, cb) {
         persist:false
     });
  },
- 
+
  getBroadcastDesc: function() {
     return manatee.broadcastDesc;
  },
@@ -484,7 +483,7 @@ sendChatMessage: function(msg, cb) {
             type:"sub",
             name:manatee.gsConfig.remoraChannel
         }]
-    }, cb) 
+    }, cb)
  },
 
  takeOverBroadcast: function(cb) {
@@ -548,7 +547,7 @@ sendChatMessage: function(msg, cb) {
         });
     });
  },
- 
+
  createBroadcast: function(lastBroadcast, cb) {
      // subscribe to queueChannel
     manatee.sub([
@@ -594,7 +593,7 @@ sendChatMessage: function(msg, cb) {
         });
     });
  },
- 
+
  broadcast: function(lastBroadcast, cb) {
     manatee.broadcastDesc = lastBroadcast.Description;
     manatee.get({keys:["s"],userid:manatee.userInfo.userID}, function(res) {
@@ -603,7 +602,7 @@ sendChatMessage: function(msg, cb) {
             manatee.subToBroadcast(res.values[0].bcast, function(success, ret) {
                 if (!success || ret[0].params.qc == undefined)
                 {
-                    broadcast(lastbroadcast, cb);
+                    manatee.createBroadcast(lastBroadcast, cb);
                     return;
                 }
                 manatee.broadcastDesc = ret[0].params.d;
