@@ -212,7 +212,7 @@ sendChatMessage: function(msg, cb) {
             type:"chat",
             data: msg,
             ignoreTag: false,
-            playingSongID: manatee.getQueue().getCurrentSongPlaying()
+            playingSongID: manatee.getQueue().getIdCurrentSongPlaying()
         },
         subs: [{
                 type:"sub",

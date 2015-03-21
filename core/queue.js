@@ -361,10 +361,17 @@ Queue.prototype.qAddSongs = function(songArray) {
 }
 
 // Get the ID of the track we are playing right now, 0 if none
-Queue.prototype.getCurrentSongPlaying = function() {
+Queue.prototype.getIdCurrentSongPlaying = function() {
     if (this.tracks.length)
         return this.tracks[0].id;
     return 0;
+}
+
+// Get the track we are playing right now, null if none
+Queue.prototype.getIdCurrentSongPlaying = function() {
+    if (this.tracks.length)
+        return this.tracks[0];
+    return null;
 }
 
 // Fills the two empty array passed as a parameter. On the first one, we fill the trackId, on the second one the queueTrackId.
