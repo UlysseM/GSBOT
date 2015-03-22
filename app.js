@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-GLOBAL.GSBOTVERSION = '2.0.5BETA';
+GLOBAL.GSBOTVERSION = '2.0.6BETA';
 
 var grooveshark = require('./core/grooveshark.js');
 var manatee = require('./core/manatee.js')
@@ -98,6 +98,29 @@ var GU = {
             }
         }
     },
+    OnListenerJoin: function(userobj) {
+        if (GU.modCallback.onListenerJoin.length)
+        {
+            var req = request.onUserAction(userobj);
+            try {
+                GU.modCallback.onListenerJoin.forEach(function(cb){cb(req)});
+            } catch (err) {
+                console.log(err.stack)
+            }
+        }
+    },
+    OnListenerLeave: function(userobj) {
+        if (GU.modCallback.onListenerLeave.length)
+        {
+            var req = request.onUserLogInOut(userobj);
+            try {
+                GU.modCallback.onListenerLeave.forEach(function(cb){cb(req)});
+            } catch (err) {
+                console.log(err.stack)
+            }
+        }
+    },
+
  },
 
  // Call the callback with the user as a parameter, or null if the login failed.

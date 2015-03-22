@@ -11,6 +11,7 @@ var manatee = {
  blackboxCallback: [],
  subCallback: {},
  queue: null,
+ listeners: null,
  currentTrack: null,
  broadcastDesc: '',
 
@@ -19,7 +20,18 @@ var manatee = {
     OnSocketClose: null,
     OnChatMessageRcv: null,
     OnSongChange: null,
-    OnQueueChange: null
+    OnQueueChange: null,
+    OnListenerJoin: null,
+    OnListenerLeave: null
+ },
+
+ getListeners: function() {
+    if (manatee.listeners == null)
+    {
+        var Listeners = require('./listeners.js').Listeners;
+        manatee.listeners = new Listeners(manatee);
+    }
+    return manatee.listeners;
  },
 
  getQueue: function() {
@@ -64,8 +76,10 @@ var manatee = {
         case 'unsub_alert':
             if (message.unsub_alert && message.unsub_alert.sub && manatee.subCallback[message.unsub_alert.sub])
             {
-                console.log('Not sure why getting an unsub alert, let\'s resub...');
-                manatee.sub([{overwrite_params:false,sub:message.unsub_alert.sub}], [manatee.subCallback[message.unsub_alert.sub]]);
+                if (message.unsub_alert.id && message.unsub_alert.id.sudo || message.unsub_alert.id.userid == manatee.userInfo.userID) // manatee or current user is DC-ing!? let's resub!
+                    manatee.sub([{overwrite_params:false,sub:message.unsub_alert.sub}], [manatee.subCallback[message.unsub_alert.sub]]);
+                else
+                    manatee.subCallback[message.unsub_alert.sub](message.type, message.unsub_alert);
             }
             break;
         default:
@@ -335,6 +349,20 @@ sendChatMessage: function(msg, cb) {
             }
         }
         break;
+    case 'sub_alert':
+        if (msg.id)
+        {
+            if (manatee.getListeners().add(msg.id) && typeof manatee.callback.OnListenerJoin == 'function')
+                manatee.callback.OnListenerJoin(msg.id);
+        }
+        break;
+    case 'unsub_alert':
+        if (msg.id)
+        {
+            if (manatee.getListeners().del(msg.id) && typeof manatee.callback.OnListenerLeave == 'function')
+                manatee.callback.OnListenerLeave(msg.id);
+        }
+        break;
     default:
         break;
     }
@@ -486,6 +514,15 @@ sendChatMessage: function(msg, cb) {
     }, cb)
  },
 
+ updateListenerList: function() {
+    manatee.sendManateeMessage('info', {
+        type:'sub_list_with_extra',
+        sub_list_with_extra:'bcast:' + manatee.currentBroadcastId
+    }, function(message) {
+        manatee.getListeners().reset(message.sub_list_with_extra);
+    });
+ },
+
  takeOverBroadcast: function(cb) {
     manatee.sub([
         {
@@ -526,6 +563,7 @@ sendChatMessage: function(msg, cb) {
                     if (!manatee.getQueue().currentQueueTrackId)
                         manatee.getQueue().playRandom();
                     cb(success);
+                    manatee.updateListenerList();
                 });
             }
         }
@@ -606,7 +644,6 @@ sendChatMessage: function(msg, cb) {
                     return;
                 }
                 manatee.broadcastDesc = ret[0].params.d;
-                console.log("AFTER " + manatee.broadcastDesc);
                 manatee.getQueue().channel = ret[0].params.qc;
                 manatee.getQueue().updatePublisher(ret[0].params.publishers);
                 if (ret[0].params.h && ret[0].params.h.s)
@@ -648,10 +685,7 @@ sendChatMessage: function(msg, cb) {
 
  init: function(userInfo, mancallback, cb) {
     manatee.userInfo = userInfo;
-    manatee.callback.OnSocketClose = mancallback.OnSocketClose;
-    manatee.callback.OnChatMessageRcv = mancallback.OnChatMessageRcv;
-    manatee.callback.OnSongChange = mancallback.OnSongChange;
-    manatee.callback.OnQueueChange = mancallback.OnQueueChange;
+    manatee.callback = mancallback;
 
     manatee.getQueue(); // preload the queue now.
     manatee.getSocket(function() {
@@ -685,6 +719,7 @@ sendChatMessage: function(msg, cb) {
 module.exports = {
  broadcast: manatee.broadcast,
  getQueue: manatee.getQueue,
+ getListeners: manatee.getListeners,
  init: manatee.init,
  ping: manatee.ping,
  sendChatMessage: manatee.sendChatMessage,
