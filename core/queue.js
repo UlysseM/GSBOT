@@ -368,7 +368,7 @@ Queue.prototype.getIdCurrentSongPlaying = function() {
 }
 
 // Get the track we are playing right now, null if none
-Queue.prototype.getIdCurrentSongPlaying = function() {
+Queue.prototype.getCurrentSongPlaying = function() {
     if (this.tracks.length)
         return this.tracks[0];
     return null;

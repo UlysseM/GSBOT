@@ -48,13 +48,21 @@ Request.prototype.moveTracks = function(queueSongIds, newRelativePos) {
     manatee.getQueue().moveTracks(queueSongIds, newRelativePos);
 }
 
+Request.prototype.getBroadcastInfo = function() {
+    return manatee.getBroadcastInfo();
+}
+
 Request.prototype.getBroadcastName = function() {
-    return manatee.getBroadcastDesc();
+    return manatee.getBroadcastInfo().broadcastDesc;
 }
 
 Request.prototype.setBroadcastDesc = function(name) {
     if (typeof name == 'string')
         manatee.setBroadcastDesc(name);
+}
+
+Request.prototype.getCurrentSongPlaying = function() {
+    return manatee.getQueue().getCurrentSongPlaying();
 }
 
 Request.prototype.getTracksInQueue = function() {
