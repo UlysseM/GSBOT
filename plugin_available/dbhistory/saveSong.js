@@ -4,7 +4,7 @@ var saveSong = {
     description: 'Send to the php database when a song changes.',
     config: {
         url: null,
-        secret: null,
+        key: null,
         permission: ['guest']
     },
     onSongChange: function(request) {
@@ -16,7 +16,8 @@ var saveSong = {
             && saveSong.config.url.length > 0)
         {
             var songToSave = request.oldSong;
-            songToSave['uID'] = request.userID +':'+saveSong.config.secret; // TODO add the userid:config.secret to this value.
+            songToSave['key'] = saveSong.config.key;
+            songToSave['uID'] = request.userID ; // TODO add the userid
             songToSave['h'] = request.oldVote;
             songToSave['bcSID'] = 'testValue:'+request.oldVote.queueSongID; //TODO when uman adds built in functionality for bcid.
             songToSave['l'] = request.getListenerCount();

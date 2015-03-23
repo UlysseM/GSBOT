@@ -14,14 +14,15 @@ stats: when a user issues /stats it will return the stats for the currently play
 # Configuration
 
 Make sure to include the following under the plugins: { section of your config.js
+
     dbhistory: {
         stats: {
             url: 'http://path/to/gsdb.php',
-            secret: 'a random string no longer than 20 characters'
+            key: 'your api key'
         },
         saveSong: {
             url: 'http://path/to/gsdb.php',
-            secret: 'the same random string must be used throughout the config file'
+            key: 'your api key'
         }
 
     }

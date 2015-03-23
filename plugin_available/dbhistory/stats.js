@@ -4,6 +4,7 @@ var stats = {
     description: 'Get play stats from the php database.',
     config: {
         url: null,
+        key: null,
         permission: ['isListener']
     },
     onCall: function(request) {
@@ -12,9 +13,9 @@ var stats = {
         if (typeof stats.config.url !== 'undefined'
             && stats.config.url.length > 0 )
         {
-            request.sendChat(request.getTracksInQueue());
+            request.sendChat(request.getCurrentSongPlaying());
             console.log("rawr:")
-            console.log(request.getTracksInQueue())
+            console.log(request.getCurrentSongPlaying())
             if (typeof stats.config.url == 'undefined' && request.tracks[request.currentQueueTrackId] == null)
                 return;
 
@@ -25,7 +26,7 @@ var stats = {
                 songID = currSongID;
             var userID = request.userID; // TODO: needs to be the id of the  broadcaster, not the user.
 
-            var url = stats.config.url + "?songid=" + encodeURIComponent(songID) + "&userid=" + encodeURIComponent(userID);
+            var url = stats.config.url + "?key=" + encodeURIComponent(stats.config.key) + "&songid=" + encodeURIComponent(songID) + "&userid=" + encodeURIComponent(userID);
             console.log("/stats query:")
             http.get(url, function(res) {
                 console.log("/stats: Got response: " + res.statusCode);

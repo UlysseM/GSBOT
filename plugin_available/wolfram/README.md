@@ -10,6 +10,7 @@ Soft boiled eggs are looked up only if there no match found on wolfram.
 # Configuration
 
 Make sure to include the following under the plugins: { section of your config.js
+
     wolfram: {
         wolfram: {
             url : 'path/to/wolfram.php?q='
