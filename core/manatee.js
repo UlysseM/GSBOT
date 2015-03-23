@@ -475,8 +475,12 @@ sendChatMessage: function(msg, cb) {
     });
  },
 
- getBroadcastDesc: function() {
-    return manatee.broadcastDesc;
+ getBroadcastInfo: function() {
+    return {
+        userID: manatee.userInfo.userID,
+        broadcastID: manatee.currentBroadcastId,
+        broadcastDesc: manatee.broadcastDesc
+    };
  },
 
  connectQueueToBroadcast: function(lastBroadcast, ownerID, cb) {
@@ -724,5 +728,5 @@ module.exports = {
  ping: manatee.ping,
  sendChatMessage: manatee.sendChatMessage,
  setBroadcastDesc: manatee.setBroadcastDesc,
- getBroadcastDesc: manatee.getBroadcastDesc
+ getBroadcastInfo: manatee.getBroadcastInfo
 };
