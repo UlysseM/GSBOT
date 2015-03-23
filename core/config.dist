@@ -2,5 +2,4 @@
 module.exports = {
  username: '', // Fill this with your grooveshark email / username
  password: '', // Fill this with your grooveshark password
- wolframURL: '', // If you plan on utilizing the wolfram|alpha plugin, enter the http url of the php file. It is recommended that this be an internally served file only. EX: http://localhost/wolfram.php?q=
 };

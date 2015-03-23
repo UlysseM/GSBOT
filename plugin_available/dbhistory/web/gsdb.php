@@ -64,19 +64,19 @@ $request_body = file_get_contents('php://input');
 $data = json_decode($request_body);
 
 $parms = new QueryParameters();
-$parms->addParameter(':broadcastSongID',$data->history->broadcastSongID);
-$parms->addParameter(':userID',$data->userID);
-$parms->addParameter(':songID',$data->songID);
-$parms->addParameter(':songName',$data->songName);
-$parms->addParameter(':artistID',$data->artistID);
-$parms->addParameter(':artistName',$data->artistName);
-$parms->addParameter(':albumID',$data->albumID);
-$parms->addParameter(':albumName',$data->albumName);
-$parms->addParameter(':votes',count($data->history->upVotes)-count($data->history->downVotes));
-$parms->addParameter(':upVotes',count($data->history->upVotes));
-$parms->addParameter(':downVotes',count($data->history->downVotes));
-$parms->addParameter(':listens',$data->history->listens);
-$parms->addParameter(':estimateDuration',$data->estimateDuration);
+$parms->addParameter(':broadcastSongID',$data->bcSID);
+$parms->addParameter(':userID',$data->uID);
+$parms->addParameter(':songID',$data->sID);
+$parms->addParameter(':songName',$data->sN);
+$parms->addParameter(':artistID',$data->arID);
+$parms->addParameter(':artistName',$data->arN);
+$parms->addParameter(':albumID',$data->alID);
+$parms->addParameter(':albumName',$data->alN);
+$parms->addParameter(':votes',count($data->h->up)-count($data->h->down));
+$parms->addParameter(':upVotes',count($data->h->up));
+$parms->addParameter(':downVotes',count($data->h->down));
+$parms->addParameter(':listens',$data->l);
+$parms->addParameter(':estimateDuration',$data->estD);
 
 $query = "INSERT INTO  songHistory (broadcastSongID, userID, songID,
             songName, artistID, artistName, albumID, albumName, votes, upVotes, downVotes,
