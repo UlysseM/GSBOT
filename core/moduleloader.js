@@ -4,7 +4,9 @@ var moduleLoader = {
  callback: {
     onChatMessageRcv: [],
     onQueueChange: [],
-    onSongChange: []
+    onSongChange: [],
+    onListenerJoin: [],
+    onListenerLeave: [],
  },
 
  loadModule: function(path, pluginname, config) {

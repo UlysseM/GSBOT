@@ -72,6 +72,28 @@ Request.prototype.getLastCollectionQueueTrackId = function() {
     return manatee.getQueue().lastCollectionQueueTrackId;
 }
 
+Request.prototype.getListenerCount = function() {
+    return manatee.getListeners().getListenerCount();
+}
+
+Request.prototype.getAdvancedListenerCount = function() {
+    var listeners = manatee.getListeners();
+    return {
+        anonymous: listeners.getAnonymousCount(),
+        logged: listeners.getUserCount(),
+        total: listeners.getListenerCount()
+    };
+}
+
+Request.prototype.getListenersId = function() {
+    return manatee.getListeners().getListenersId();
+}
+
+// Return the name of the listener, or null if the user isn't listening to the broadcast.
+Request.prototype.getListenerNameFromId = function(userid) {
+    return manatee.getListeners().getNameFromId(userid);
+}
+
 /********* CONSTRUCTORS *********/
 
 function defaultConstructor()
@@ -89,6 +111,15 @@ function onCall(userID, followingList, params)
     return req;
 }
 
+function onUserAction(userobj)
+{
+    var req = new Request();
+    req.anonymous = !userobj.userid;
+    req.userID = userobj.userid;
+    req.username = req.anonymous ? null : userobj.app_data.n;
+    return req;
+}
+
 function onSongChange(oldSong, oldVote, newSong)
 {
     var req = new Request();
@@ -98,4 +129,4 @@ function onSongChange(oldSong, oldVote, newSong)
     return req;
 }
 
-module.exports = {defaultConstructor: defaultConstructor, onCall: onCall, onSongChange: onSongChange};
+module.exports = {defaultConstructor: defaultConstructor, onCall: onCall, onSongChange: onSongChange, onUserAction: onUserAction};
