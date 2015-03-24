@@ -39,7 +39,7 @@ var saveSong = {
             var req = http.request(options, function(resp) {
                 console.log('saveSong response code: '+resp.statusCode);
                 resp.on('data', function(chunk) {
-                    request.sendChat('BODY: '+chunk);
+                    request.sendChat(chunk);
                     console.log('HEADERS: '+JSON.stringify(resp.headers));
                 })
 
