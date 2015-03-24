@@ -1,4 +1,5 @@
 var moduleLoader = {
+ allPluginObj: null,
  loaded: false,
  moduleList: {},
  callback: {
@@ -9,84 +10,91 @@ var moduleLoader = {
     onListenerLeave: [],
  },
 
- loadModule: function(path, pluginname, config) {
-    var module = require(path);
-    if (module.mod && typeof module.mod.name == 'string')
+ loadModule: function(module, user_conf) {
+    if (module.config && user_conf)
     {
-        if (module.mod.config && config.plugins && config.plugins[pluginname] && config.plugins[pluginname][module.mod.name])
+        var modConfig = module.config;
+        Object.keys(modConfig).forEach(function(key) {
+            if (user_conf[key] != undefined)
+                modConfig[key] = user_conf[key];
+        });
+    }
+    var init = false;
+    if (typeof module.onCall == 'function')
+    {
+        moduleLoader.moduleList[module.name] = module;
+        init = true;
+    }
+    // Add the mod to the "callback array" it wishes a subscription.
+    Object.keys(moduleLoader.callback).forEach(function(cbName) {
+        if (typeof module[cbName] == 'function')
         {
-            var modConfig = module.mod.config;
-            var userconfig = config.plugins[pluginname][module.mod.name];
-            Object.keys(modConfig).forEach(function(key) {
-                if (userconfig[key])
-                    modConfig[key] = userconfig[key];
-            });
-        }
-        var init = false;
-        if (typeof module.mod.onCall == 'function')
-        {
-            moduleLoader.moduleList[module.mod.name] = module.mod;
+            moduleLoader.callback[cbName].push(module[cbName]);
             init = true;
         }
-        // Add the mod to the "callback array" it wishes a subscription.
-        Object.keys(moduleLoader.callback).forEach(function(cbName) {
-            if (typeof module.mod[cbName] == 'function')
-            {
-                moduleLoader.callback[cbName].push(module.mod[cbName]);
-                init = true;
-            }
-        });
-        if (init && typeof module.mod.init == 'function')
-        {
-            module.mod.init(moduleLoader.moduleList);
-        }
+    });
+    if (init && typeof module.init == 'function')
+    {
+        module.init(moduleLoader.moduleList);
     }
  },
 
- init: function() {
-    if (moduleLoader.loaded)
-        return;
-    moduleLoader.loaded = true;
+ getAllPluginsObj: function() {
+    if (moduleLoader.allPluginObj)
+        return moduleLoader.allPluginObj;
+
+    moduleLoader.allPluginObj = {};
 
     var fs = require('fs');
     var path = require('path');
 
-    var modpath = path.resolve('.', 'plugin_enabled');
-    var config = require('../config.js');
-    fs.readdir(modpath, function(err, moduledirs) {
-        moduledirs.forEach(function(pluginname) {
-            var moduledir = path.resolve(modpath, pluginname);
-            fs.lstat(moduledir, function(err, stat) {
-                var mDir;
-                if (stat.isDirectory())
-                    mDir = moduledir;
-                else if (stat.isSymbolicLink())
-                    mDir = fs.readlinkSync(moduledir);
-                else
-                    return;
-                fs.readdir(mDir, function(err, files) {
-                    files.forEach(function(file) {
-                        file = path.resolve(mDir, file);
-                        fs.stat(file, function(err, stat) {
-                            if (stat.isFile())
-                                moduleLoader.loadModule(file, pluginname, config);
-                        });
-                    });
-                });
+    var pluginPath = path.resolve('.', 'plugins');
+    fs.readdirSync(pluginPath).forEach(function(pluginName) {
+        var plugin = {};
+        var currPluginPath = path.resolve(pluginPath, pluginName);
+        if (fs.statSync(currPluginPath).isDirectory())
+            fs.readdirSync(currPluginPath).forEach(function(module) {
+                if (path.extname(module) == '.js')
+                {
+                    var modulePath = path.resolve(currPluginPath, module);
+                    if (fs.statSync(modulePath).isFile())
+                    {
+                        var module = require(modulePath);
+                        if (module.mod && typeof module.mod.name == 'string')
+                            plugin[module.mod.name] = module.mod;
+                    }
+                }
             });
-        });
+        if (Object.keys(plugin).length)
+            moduleLoader.allPluginObj[pluginName] = plugin;
+    });
+    return moduleLoader.allPluginObj;
+ },
+
+ init: function(plugins_enabled, plugins_conf) {
+    if (moduleLoader.loaded)
+        return;
+    var plugins = moduleLoader.getAllPluginsObj();
+    Object.keys(plugins).forEach(function(pluginName) {
+        if (plugins_enabled.indexOf(pluginName) != -1) // loading this plugin
+        {
+            var plugin = plugins[pluginName];
+            Object.keys(plugin).forEach(function(moduleName) { // loading all the module in this plugin
+                moduleLoader.loadModule(plugin[moduleName], plugins_conf[pluginName] ? plugins_conf[pluginName][moduleName] : undefined);
+            });
+        }
     });
  },
 
- getList: function() {
-    moduleLoader.init();
+ getList: function(plugins_enabled, plugins_conf) {
+    moduleLoader.init(plugins_enabled, plugins_conf);
     return moduleLoader.moduleList;
  },
 
- getCallbackList: function() {
-    moduleLoader.init();
+ getCallbackList: function(plugins_enabled, plugins_conf) {
+    moduleLoader.init(plugins_enabled, plugins_conf);
     return moduleLoader.callback;
  }
 };
 
-module.exports = { getList: moduleLoader.getList, getCallbackList: moduleLoader.getCallbackList };
+module.exports = { getList: moduleLoader.getList, getCallbackList: moduleLoader.getCallbackList, getAllPluginsObj: moduleLoader.getAllPluginsObj };
