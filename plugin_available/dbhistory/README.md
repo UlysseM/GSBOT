@@ -1,4 +1,4 @@
-# dbhistory plugin for GSBOT
+/* # dbhistory plugin for GSBOT
 
 This plugin provides you the ability to save song play stats, keep records, voting history and listener counts over extended periods of time.
 
@@ -32,3 +32,5 @@ If you'd like to disable any portion of this script, then leave the url blank in
 # Commands
 
 users can query wolfram by issuing a /wa <input> command. The plugin will query the script and return results as they are found. This means that sometimes some questions are answered faster than others.
+
+*/

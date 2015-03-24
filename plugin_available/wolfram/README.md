@@ -1,4 +1,4 @@
-# wolfram|alpha plugin for GSBOT
+/* # wolfram|alpha plugin for GSBOT
 
 This plugin provides your users the ability to query wolfram|alpha for information from it's database as well as provide some of your own answers, as defined in easter.php.
 
@@ -20,3 +20,5 @@ Make sure to include the following under the plugins: { section of your config.j
 # Commands
 
 users can query wolfram by issuing a /wa <input> command. The plugin will query the script and return results as they are found. This means that sometimes some questions are answered faster than others.
+
+*/
