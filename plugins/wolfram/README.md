@@ -9,11 +9,11 @@ Soft boiled eggs are looked up only if there no match found on wolfram.
 
 # Configuration
 
-Make sure to include the following under the plugins: { section of your config.js
+Make sure to include the following under the plugins_conf: { section of your config.js
 
-    wolfram: {
-        wa: {
-            url : 'path/to/wolfram.php?q='
+    "wolfram": {
+        "wa": {
+            "url" : "path/to/wolfram.php?q="
         }
     }
     

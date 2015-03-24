@@ -4,8 +4,7 @@ var saveSong = {
     description: 'Send to the php database when a song changes.',
     config: {
         url: null,
-        key: null,
-        permission: ['guest']
+        key: null
     },
     onSongChange: function(request) {
         var http = require('http');

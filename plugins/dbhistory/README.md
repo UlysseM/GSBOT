@@ -17,16 +17,16 @@ stats: when a user issues /stats it will return the stats for the currently play
 
 # Configuration
 
-Make sure to include the following under the plugins: { section of your config.js
+Make sure to include the following under the plugins_conf: { section of your config.json
 
-    dbhistory: {
-        stats: {
-            url: 'http://stats.sharkcommunity.com/api/',
-            key: 'your api key'
+    "dbhistory": {
+        "stats": {
+            "url": "http://stats.sharkcommunity.com/api/",
+            "key": "your api key"
         },
-        saveSong: {
-            url: 'http://stats.sharkcommunity.com/api/',
-            key: 'your api key'
+        "saveSong": {
+            "url": "http://stats.sharkcommunity.com/api/",
+            "key": "your api key"
         }
 
     }
@@ -34,10 +34,10 @@ Make sure to include the following under the plugins: { section of your config.j
 If you'd like to disable any portion of this script, then leave the url blank in that associated section. A blank url will disable that section. For example, if you wanted to enable stats saving, but disable lookup, you can do that by keeping the url blank in stats, but setting it in saveSong.
 You can also change the permissions requires to call the /stats command by overriding the default permission, as you would any other plugin:
 
-    saveSong: {
-        url: 'http://stats.sharkcommunity.com/api/',
-        key: 'your api key',
-        permission: ['guest', 'isFollowed']
+    "saveSong": {
+        "url": "http://stats.sharkcommunity.com/api/",
+        "key": "your api key",
+        "permission": ["guest", "isFollowed"]
     }
     
 # Commands
