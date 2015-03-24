@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-GLOBAL.GSBOTVERSION = '2.0.6BETA';
+GLOBAL.GSBOTVERSION = '2.0.7BETA';
 
 var grooveshark = require('./core/grooveshark.js');
 var manatee = require('./core/manatee.js')
@@ -123,16 +123,40 @@ var GU = {
 
  },
 
+ mergeConfig: function(bcConfig, masterConfig, depth) {
+    var bcKeys = Object.keys(bcConfig);
+    var msKeys = Object.keys(masterConfig);
+    for (var i = 0; i < bcKeys.length; ++i)
+    {
+        var curr = bcKeys[i];
+        if (msKeys.indexOf(curr) == -1 || depth == 0)
+        {
+            masterConfig[curr] = bcConfig[curr];
+        }
+        else
+        {
+            GU.mergeConfig(bcConfig[curr], masterConfig[curr], depth - 1);
+        }
+    }
+ },
+
  // Call the callback with the user as a parameter, or null if the login failed.
- login: function(cb) {
+ login: function(config, cb) {
     if (GU.user)
     {
         cb(GU.user);
         return;
     }
-    var config = require('./config.js');
-    var user = config.username;
-    var pass = config.password;
+    var allBroadcast = Object.keys(config.broadcasts);
+    if (allBroadcast.length != 1)
+    {
+        console.log("Error, there must be ONE broadcast in the config file, no more (will change soon, probably), no less.");
+        return;
+    }
+    var user = allBroadcast[0];
+    var bcastConfig = config.broadcasts[user];
+    GU.mergeConfig(bcastConfig.plugins_conf, config.plugins_conf, 2);
+    var pass = config.broadcasts[user].password;
 
     if (user == '' || pass == '')
     {
@@ -150,53 +174,46 @@ var GU = {
         else
         {
             GU.user = message;
-            cb(GU.user);
+            cb(GU.user, bcastConfig.plugins_enabled);
         }
     };
     grooveshark.more(parameters, true, callback);
  },
 
  getFollowing: function() {
-        grooveshark.more({method: 'getFavorites', parameters: {userID: GU.user.userID, ofWhat: "Users"}},
-        false,
-        function(alluser) {
-            alluser.forEach(function(single) {
-                GU.isFollowed.push(parseInt(single.UserID));
-            });
+    grooveshark.more({method: 'getFavorites', parameters: {userID: GU.user.userID, ofWhat: "Users"}},
+    false,
+    function(alluser) {
+        alluser.forEach(function(single) {
+            GU.isFollowed.push(parseInt(single.UserID));
         });
+    });
  },
 
- // copy the file from ./core/config.dist to ./config.js
- createConfigFile: function(cb) {
+ checkFirstInstall: function(cb) {
     var fs = require('fs');
-    if (!fs.existsSync('plugin_enabled'))
-    {
-        console.log("Error: You should run the EnablePlugins script !");
-        return;
-    }
-    fs.exists('config.js', function(exists) {
+    fs.exists('config.json', function(exists) {
         if (exists)
         {
-            cb();
+            var content = JSON.parse(fs.readFileSync('config.json', 'UTF-8'));
+            cb(content);
         }
         else
         {
-            var stream = fs.createReadStream('core/config.dist');
-            stream.pipe(fs.createWriteStream('config.js'));
-            stream.on('close', cb);
+            require('./core/reconfigure.js').reconfigure(cb);
         }
     });
  },
 
  init: function() {
-    GU.createConfigFile(function() {
-        GU.login(function(userinfo) {
+    GU.checkFirstInstall(function(config) {
+        GU.login(config, function(userinfo, plugins_enabled) {
             if (userinfo && userinfo.userID)
             {
                 console.log('Logged successfully as ' + userinfo.FName);
                 GU.getFollowing();
-                GU.mods = moduleloader.getList();
-                GU.modCallback = moduleloader.getCallbackList();
+                GU.mods = moduleloader.getList(plugins_enabled, config.plugins_conf);
+                GU.modCallback = moduleloader.getCallbackList(plugins_enabled, config.plugins_conf);
                 GU.getLastBroadcast(function(lastBroadcast) {
                     manatee.init(userinfo, GU.manateeCallback, function(boolres) {
                         manatee.broadcast(lastBroadcast, function(success){
@@ -211,7 +228,7 @@ var GU = {
             }
             else
             {
-                console.log('Error: cannot login. Make sure to fill your username and password in the file \'config.js\'');
+                console.log('Error: cannot login. Probably a wrong login / password. Edit the config.json file or run the reconfigure script.');
             }
         });
     });
