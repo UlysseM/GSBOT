@@ -1,7 +1,7 @@
 var stats = {
     author: 'pironic',
     name: 'stats',
-    description: 'Get play stats from the php database.',
+    description: '- Get play stats from the php database.',
     config: {
         url: null,
         key: null,
@@ -10,15 +10,15 @@ var stats = {
     onCall: function(request) {
         var http = require('http');
 
-        if (typeof stats.config.url !== 'undefined'
+        if (stats.config.url !== null
             && stats.config.url.length > 0 )
         {
-            if (typeof stats.config.url == 'undefined' && request.getCurrentSongPlaying() == null)
+            if (request.params == null && request.getCurrentSongPlaying() == null)
                 return;
 
             var currSongID = request.getCurrentSongPlaying().id;
             var songID = parseInt(request.params);
-            if (songID.length < 1)
+            if (isNaN(songID))
                 songID = currSongID;
             var userID = request.getBroadcastInfo().userID;
 

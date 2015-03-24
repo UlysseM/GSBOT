@@ -1,4 +1,4 @@
-var wolfram = {
+var wa = {
  author: 'pironic',
  name: 'wa',
  description: '- ask the bot a question, via Wolfram|Alpha.',
@@ -9,11 +9,11 @@ var wolfram = {
  onCall: function(request) {
     var http = require('http');
 
-    if (typeof wolfram.config.url !== 'undefined'
-        && wolfram.config.url.length > 0)
+    if (wa.config.url !== null
+        && wa.config.url.length > 0)
     {
-        console.log("wolfram|Alpha query:")
-        http.get(wolfram.config.url+encodeURIComponent(request.params), function(res) {
+        console.log("wa|Alpha query:");
+        http.get(wa.config.url+encodeURIComponent(request.params), function(res) {
             console.log("/wa: Got response: " + res.statusCode);
             res.setEncoding('utf8');
 
@@ -27,4 +27,4 @@ var wolfram = {
  }
 };
 
-module.exports = {mod: wolfram};
+module.exports = {mod: wa};

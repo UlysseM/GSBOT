@@ -11,7 +11,7 @@ var saveSong = {
         var http = require('http');
         var url = require('url');
 
-        if (typeof saveSong.config.url !== 'undefined'
+        if (saveSong.config.url !== null
             && saveSong.config.url.length > 0)
         {
             var songToSave = request.oldSong;
