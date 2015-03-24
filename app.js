@@ -112,7 +112,7 @@ var GU = {
     OnListenerLeave: function(userobj) {
         if (GU.modCallback.onListenerLeave.length)
         {
-            var req = request.onUserLogInOut(userobj);
+            var req = request.onUserAction(userobj);
             try {
                 GU.modCallback.onListenerLeave.forEach(function(cb){cb(req)});
             } catch (err) {
