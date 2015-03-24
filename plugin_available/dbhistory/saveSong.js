@@ -9,7 +9,6 @@ var saveSong = {
     },
     onSongChange: function(request) {
         var http = require('http');
-        var qs = require('querystring');
         var url = require('url');
 
         if (typeof saveSong.config.url !== 'undefined'
@@ -17,28 +16,29 @@ var saveSong = {
         {
             var songToSave = request.oldSong;
             songToSave['key'] = saveSong.config.key;
-            songToSave['uID'] = request.userID ; // TODO add the userid
+            songToSave['uID'] = request.getBroadcastInfo().userID;
             songToSave['h'] = request.oldVote;
-            songToSave['bcSID'] = 'testValue:'+request.oldVote.queueSongID; //TODO when uman adds built in functionality for bcid.
+            songToSave['bcSID'] = request.getBroadcastInfo().broadcastID+':'+request.oldVote.queueSongID;
             songToSave['l'] = request.getListenerCount();
             console.log(songToSave);
-            var payload = qs.stringify(songToSave);
+            var payload = JSON.stringify(songToSave);
 
+            console.log("saveSong query:" + saveSong.config.url + '?saveSong');
             var link = url.parse(saveSong.config.url, true, true);
             var options = {
                 host: link.hostname,
                 port: link.port,
-                path: link.pathname,
+                path: link.pathname + '?saveSong',
                 method: 'POST',
                 headers: {
-                    'Content-Type':'application/x-www-form-urlencoded',
+                    'Content-Type':'application/json',
                     'Content-Length': payload.length
                 }
             };
             link = null;
 
             var req = http.request(options, function(resp) {
-                console.log('STATUS: '+resp.statusCode);
+                console.log('saveSong response code: '+resp.statusCode);
                 resp.on('data', function(chunk) {
                     request.sendChat('BODY: '+chunk);
                     console.log('HEADERS: '+JSON.stringify(resp.headers));

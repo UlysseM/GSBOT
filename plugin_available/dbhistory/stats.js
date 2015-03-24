@@ -20,19 +20,19 @@ var stats = {
             var songID = parseInt(request.params);
             if (songID.length < 1)
                 songID = currSongID;
-            var userID = request.userID; // TODO: needs to be the id of the  broadcaster, not the user.
+            var userID = request.getBroadcastInfo().userID;
 
-            var url = stats.config.url + "?key=" + encodeURIComponent(stats.config.key) + "&userid=" + encodeURIComponent(userID) + "&songid=" + encodeURIComponent(songID);
-            console.log("/stats query:")
+            var url = stats.config.url + "?getStats&key=" + encodeURIComponent(stats.config.key) + "&userid=" + encodeURIComponent(userID) + "&songid=" + encodeURIComponent(songID);
+            console.log("/stats query:" + url);
             http.get(url, function(res) {
-                console.log("/stats: Got response: " + res.statusCode);
+                console.log("/stats response code: " + res.statusCode);
                 res.setEncoding('utf8');
 
                 res.on('data', function (chunk) {
                     request.sendChat(chunk);
                 });
             }).on('error', function(e) {
-                console.log("/stats: Got error: " + e.message);
+                console.log("/stats ERROR: " + e.message);
             });
         }
     }
