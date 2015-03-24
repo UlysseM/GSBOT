@@ -30,14 +30,15 @@ var timedCallouts = {
             }
             else if(args[0] == "add") {
                 // add a callout
-                var newCallout = args.splice(0,1).join(' ');//TODO: figure out why splice isn't working here.
+                args.splice(0,1);
+                var newCallout = args.join(' ');
                 //timedCallouts.config.timedCallouts.push(newCallout);
                 request.sendChat("Added a callout: " + newCallout);
             }
             else if (args[0] == "del") {
                 if (!isNaN(args[1])) {
                     // remove a callout
-                    timedCallouts.config.callouts.splice(args[1],1);//TODO: splice isn't working here either.
+                    timedCallouts.config.callouts.splice(args[1]-1,1);
                     request.sendChat("Removed 1 callout.")
                 }
                 else {
