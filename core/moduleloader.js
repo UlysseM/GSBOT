@@ -74,6 +74,7 @@ var moduleLoader = {
  init: function(plugins_enabled, plugins_conf) {
     if (moduleLoader.loaded)
         return;
+    moduleLoader.loaded = true;
     var plugins = moduleLoader.getAllPluginsObj();
     Object.keys(plugins).forEach(function(pluginName) {
         if (plugins_enabled.indexOf(pluginName) != -1) // loading this plugin

@@ -41,17 +41,12 @@ Instructions
 - Configuration
   - Make sure you have nodejs installed (and 'node' in your path).
     - You can get it from here https://nodejs.org/download/
-  - Before starting the bot, run the script "EnablePlugins", by going over the windows or posix file.
-    - If you are on windows, it will ask you for admin rights, and this will only work if you are on an NTFS filesystem. A workaround would be to copy the plugins you want to start from the "plugin_available" to the "plugin_enabled" directory.
-    - You will be prompted a list of plugin available, if you wish to install those, press 'y' and 'enter', if you do not, press 'n'.
-    - If you want a "raw" experience, just install the "default" one.
-    - The "plugin_test" is only here to show the functionalities of the bot to devs. It is NOT intended to run in production.
-  - Start the program a first time
-    - if you are not familiar with command line interfaces, just click on the "WindowsStart.bat" or "PosixStart.sh" depending on your operating system.
-    - Launching the program a first time will add the file "config.js" in your directory, just fill the username and password!
-- Start the bot and enjoy!
-  - It will create a broadcast based on your last one, or take over the current one.
-  - With the current version of grooveshark, you can still log in as a broadcaster to broadcast. The queue will be shared between your session and the bot.
+- Start the bot
+  - if you are not familiar with command line interfaces, just click on the "WindowsStart.bat" or "PosixStart.sh" depending on your operating system.
+  - The configuration script will start if the config.json file is missing. It will ask you to enter your grooveshark username and password, and will by default, activate the plugin "default".
+  - You can do everything you want while you're in this configuration menu, once you leave it, the config.json file will be saved for the next time and the broadcast will start.
+    - It will create a broadcast based on your last one, or take over the current one.
+    - With the current version of grooveshark, you can still log in as a broadcaster to broadcast. The queue will be shared between your session and the bot.
 
 Plugin support & Configuration
 ------------------------------
@@ -66,41 +61,32 @@ A **plugin** is a folder located in the plugin_available directory. It is made o
 
 ### Configuration
 
-Each module should contain its own default configuration, located under the key "config".
+The configuration file is a JSON that can be fully modified by the 'reconfigure' script. That script is called the first time the bot starts, or when the config.json file is missing.
 
-Each configuration parameter can be individually overwritten by the config file.
+The configuration is a tree build the following way:
 
-For instance, the module '[peek](plugin_available/default/peek.js)' in the plugin 'default' has the following configuration:
 ```javascript
- config: {
-    peekNumber: 10,
-    peekLimit: 25,
-    peekArtist: false,
-    permission: ['guest']
- },
-```
-
-Meaning that if you are not ok with the default value, and want to change the peekLimit to 15, and allow the 'isFollowed' to run the peek command (in addition of the 'guest'), you have to write in your config file:
-```javascript
-module.exports = {
-  username: 'XXXX',                 // Fill this with your grooveshark email / username
-  password: 'XXXX',                 // Fill this with your grooveshark password
-  plugins: {
-    default: {                      // name of the plugin
-      peek: {                       // name of the module
-        peekLimit: 15,
-        permission: ['isFollowed', 'guest']
+{
+  broadcasts: {
+    BROADCASTNAME {
+      plugins_available: ["default"], // LIST OF PLUGINS ENABLED FOR THIS BROADCAST
+      plugins_conf: {
+        PLUGIN_NAME: {
+          MODULE_NAME: {
+            PARAMETER_NAME: "JSON_VALUE"
+          }
+        },
       },
-      trackCounter: {               // name of the module
-        placeAfter: '{GS Bot}'
-      }
-    }
- }
-};
-
+      password: BROADCASTPASSWORD,
+    },
+  },
+  plugins_conf: {}, // Same as above, except it applies for ALL broadcast
+}
 ```
 
-Note that on this example, the value of [trackCounter](plugin_available/default/trackCounter.js)'s placeAfter was set to '{GS Bot}' (by default, it is at null).
+As you can see, this configuration can store multiple broadcast info, each of them can have custom parameters for their modules, and choose different plugin.
+
+Regarding the "plugins_conf", each plugins stores it's own default configuration. This goes from permission check to variable used to run the plugin.
 
 Setting it to a value will allow it to be active (editing the broadcast description to tell you how many tracks are left in the queue). You can see it in action at http://grooveshark.com/#!/masterofsoundtrack/broadcast/current/overview
 
