@@ -1,5 +1,5 @@
 var ping = {
- author: 'uman/pironic',
+ author: ['uman', 'pironic'],
  name: 'ping',
  description: '- Ping the BOT, also prints your USERID and Access Levels.',
  config: {

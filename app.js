@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-GLOBAL.GSBOTVERSION = '2.0.7BETA';
+GLOBAL.GSBOTVERSION = '2.0.8BETA';
 
 var grooveshark = require('./core/grooveshark.js');
 var manatee = require('./core/manatee.js')
@@ -112,7 +112,7 @@ var GU = {
     OnListenerLeave: function(userobj) {
         if (GU.modCallback.onListenerLeave.length)
         {
-            var req = request.onUserLogInOut(userobj);
+            var req = request.onUserAction(userobj);
             try {
                 GU.modCallback.onListenerLeave.forEach(function(cb){cb(req)});
             } catch (err) {

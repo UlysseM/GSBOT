@@ -10,6 +10,20 @@ var moduleLoader = {
     onListenerLeave: [],
  },
 
+ addAuthor: function(author) {
+     if (author instanceof Array)
+        author.forEach(function(auth) {
+            moduleLoader.addAuthor(auth);
+        });
+    else if (typeof author == 'string')
+    {
+        if (!GLOBAL.GSBOT_CONTRIBUTORS)
+            GLOBAL.GSBOT_CONTRIBUTORS = [];
+        if (GLOBAL.GSBOT_CONTRIBUTORS.indexOf(author) == -1)
+            GLOBAL.GSBOT_CONTRIBUTORS.push(author);
+    }
+ },
+
  loadModule: function(module, user_conf) {
     if (module.config && user_conf)
     {
@@ -18,6 +32,10 @@ var moduleLoader = {
             if (user_conf[key] != undefined)
                 modConfig[key] = user_conf[key];
         });
+    }
+    if (module.author)
+    {
+        moduleLoader.addAuthor(module.author);
     }
     var init = false;
     if (typeof module.onCall == 'function')
@@ -74,6 +92,7 @@ var moduleLoader = {
  init: function(plugins_enabled, plugins_conf) {
     if (moduleLoader.loaded)
         return;
+    moduleLoader.loaded = true;
     var plugins = moduleLoader.getAllPluginsObj();
     Object.keys(plugins).forEach(function(pluginName) {
         if (plugins_enabled.indexOf(pluginName) != -1) // loading this plugin
