@@ -3,7 +3,7 @@ var guest = {
  name: 'guest',
  description: '- Toogle your guest status.',
  config: {
-    permission: ['guest', 'isFollowed']
+    permission: ['guest', 'isFollowed', 'isWhiteListed']
  },
  onCall: function(request) {
     if (request.isGuest)

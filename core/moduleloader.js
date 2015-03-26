@@ -1,3 +1,5 @@
+var request = require('./request.js');
+
 var moduleLoader = {
  allPluginObj: null,
  loaded: false,
@@ -53,7 +55,7 @@ var moduleLoader = {
     });
     if (init && typeof module.init == 'function')
     {
-        module.init(moduleLoader.moduleList);
+        module.init(moduleLoader.moduleList, request.defaultConstructor());
     }
  },
 
