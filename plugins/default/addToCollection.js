@@ -13,7 +13,7 @@ var addToCollection = {
             songIDs: [song.id]
         }
     }, function(songData) {
-        if (songData instanceof Array && sondData.length)
+        if (songData instanceof Array && songData.length)
         {
             var newSong = {
                 albumID: songData[0].AlbumID,
