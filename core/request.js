@@ -52,10 +52,6 @@ Request.prototype.getBroadcastInfo = function() {
     return manatee.getBroadcastInfo();
 }
 
-Request.prototype.getBroadcastName = function() {
-    return manatee.getBroadcastInfo().broadcastDesc;
-}
-
 Request.prototype.setBroadcastDesc = function(name) {
     if (typeof name == 'string')
         manatee.setBroadcastDesc(name);

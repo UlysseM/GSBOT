@@ -6,7 +6,10 @@ var about = {
     permission: ['isListener']
  },
  onCall: function(request) {
-    request.sendChat('This broadcast is currently running "Grooveshark Broadcast Bot" ' + GLOBAL.GSBOTVERSION + ', created by grooveshark.com/uman42 ~ github.com/UlysseM/GSBOT/');
+    var contributors = '';
+    if (GLOBAL.GSBOT_CONTRIBUTORS)
+        contributors = ' ~ Contributors : ' + GLOBAL.GSBOT_CONTRIBUTORS.join(' ');
+    request.sendChat('This broadcast is currently running "Grooveshark Broadcast Bot" ' + GLOBAL.GSBOTVERSION + ', created by grooveshark.com/uman42 ~ github.com/UlysseM/GSBOT/' + contributors);
  }
 };
 

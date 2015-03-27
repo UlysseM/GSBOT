@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-GLOBAL.GSBOTVERSION = '2.0.7BETA';
+GLOBAL.GSBOTVERSION = '2.0.9BETA';
 
 var grooveshark = require('./core/grooveshark.js');
 var manatee = require('./core/manatee.js')
@@ -11,6 +11,7 @@ var GU = {
  user: null,
  pingInterval: null,
  isFollowed: [],
+ isWhiteListed: [],
  mods: {},
  modCallback: {},
 
@@ -27,6 +28,9 @@ var GU = {
     },
     isBroadcaster: function(userid) {
         return userid == GU.user.userID;
+    },
+    isWhiteListed: function(userid) {
+        return GU.isWhiteListed.indexOf(userid) != -1;
     },
     isListener: function(userid) {
         return true;
@@ -112,7 +116,7 @@ var GU = {
     OnListenerLeave: function(userobj) {
         if (GU.modCallback.onListenerLeave.length)
         {
-            var req = request.onUserLogInOut(userobj);
+            var req = request.onUserAction(userobj);
             try {
                 GU.modCallback.onListenerLeave.forEach(function(cb){cb(req)});
             } catch (err) {
@@ -156,6 +160,10 @@ var GU = {
     var user = allBroadcast[0];
     var bcastConfig = config.broadcasts[user];
     GU.mergeConfig(bcastConfig.plugins_conf, config.plugins_conf, 2);
+    if (config.whiteList instanceof Array)
+        Array.prototype.push.apply(GU.isWhiteListed, config.whiteList);
+    if (bcastConfig.whiteList instanceof Array)
+        Array.prototype.push.apply(GU.isWhiteListed, bcastConfig.whiteList);
     var pass = config.broadcasts[user].password;
 
     if (user == '' || pass == '')
@@ -164,20 +172,23 @@ var GU = {
         return;
     }
 
-    var parameters = {method: 'authenticateUser', parameters: {username: user, password: pass}};
-    var callback;
-    callback = function(message) {
+    grooveshark.more({
+        method: 'authenticateUser',
+        parameters: {
+            username: user,
+            password: pass
+        }
+    }, true, function(message) {
         if (message == undefined)
         {
-            grooveshark.more(parameters, true, callback);
+            cb(null, bcastConfig.plugins_enabled);
         }
         else
         {
             GU.user = message;
             cb(GU.user, bcastConfig.plugins_enabled);
         }
-    };
-    grooveshark.more(parameters, true, callback);
+    });
  },
 
  getFollowing: function() {

@@ -13,9 +13,9 @@ var trackCounter = {
     var addStr = ' ' + tracksInQueue.length + (tracksInQueue.length > 1 ? ' songs' : ' song') + ' left';
     if (tracksInQueue.length == 0 || tracksInQueue.length && tracksInQueue[tracksInQueue.length - 1].qid == request.getLastCollectionQueueTrackId())
         addStr = ' Playing from collection';
-    var bName = request.getBroadcastName();
-    addStr = bName.substr(0, bName.indexOf(trackCounter.config.placeAfter)) + trackCounter.config.placeAfter + addStr;
-    if (addStr != bName)
+    var bDesc = request.getBroadcastInfo().broadcastDesc;
+    addStr = bDesc.substr(0, bDesc.indexOf(trackCounter.config.placeAfter)) + trackCounter.config.placeAfter + addStr;
+    if (addStr != bDesc)
         request.setBroadcastDesc(addStr);
  },
 };

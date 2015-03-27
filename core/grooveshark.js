@@ -11,7 +11,7 @@ var grooveshark = {
     var salt = '';
     var hex = '0123456789abcdef';
     for (var i = 0; i < 6; ++i)
-        salt += hex[Math.round(Math.random() * 16)];
+        salt += hex[Math.round(Math.random() * 15)];
     var shasum = require('crypto').createHash('sha1');
     shasum.update(method + ':' + tokenData.getCommunicationToken + ':' + grooveshark.secret + ':' + salt);
     return salt + shasum.digest('hex');
@@ -23,8 +23,9 @@ var grooveshark = {
     res.on('data', function(chunk) { ret += chunk; });
     res.on('end', function(chunk) {cb(ret); });
  },
+
  callbackJson: function(res, cb) {
- grooveshark.callback(res, function(data){cb(JSON.parse(data).result);});
+    grooveshark.callback(res, function(data){cb(JSON.parse(data).result);});
  },
 
  // Callback the cb with the SSID as a parameter.

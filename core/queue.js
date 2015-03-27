@@ -35,12 +35,12 @@ function Queue(manatee) {
 
     // recover the collection
     {
-        var params = {method:'userGetSongIDsInLibrary',parameters: {}};
         var more = require('./grooveshark.js').more;
-        var callback;
         var that = this;
-        var retry = 5;
-        callback = function(data) {
+        more({
+            method:'userGetSongIDsInLibrary',
+            parameters: {}
+        }, false, function(data) {
             if (data && data.SongIDs)
             {
                 if (data.SongIDs.length)
@@ -50,10 +50,7 @@ function Queue(manatee) {
                 else
                     console.log('Your collection is empty, it will play the default song.');
             }
-            else if (--retry > 0)
-                more(params, false, callback);
-        };
-        more(params, false, callback);
+        });
     }
 }
 
