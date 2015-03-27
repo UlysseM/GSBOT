@@ -3,16 +3,16 @@ var timedCallouts = {
     name: 'callouts',
     description: '- Callouts Administration. valid arguments are view|add|del or do not pass anything to view how many callouts there are.',
     config: {
-        shoutOutInterval: 0.5,
+        shoutOutInterval: 30,
         callouts: [
-            "This broadcast is currently running \"Grooveshark Broadcast Bot\" " + GLOBAL.GSBOTVERSION + ", created by grooveshark.com/uman42 ~ github.com/UlysseM/GSBOT/"
+            "Welcome to our broadcast! We are running the \"Grooveshark Broadcast Bot\" " + GLOBAL.GSBOTVERSION + ", created by grooveshark.com/uman42, with the Callouts plugin created by grooveshark.com/pironic.",
+            "Join your fellow listeners and broadcasters on the Grooveshark Community Forums now! http://sharkcommunity.com/"
         ],
         permission: ['guest']
     },
     timeoutID: null,
+    storedRequest: null,
     onCall: function(request) {
-        //TODO : Add the callout commands
-
         if (request.params === undefined) {
             // output the current callout count
             request.sendChat("There are currently "+timedCallouts.config.callouts.length+" entries in the list of valid callouts. To see each, please type /callouts view #");
@@ -51,12 +51,13 @@ var timedCallouts = {
         }
 
     },
-    init: function() {
+    init: function(mods, request) {
         timedCallouts.scheduleShoutout();
+        timedCallouts.storedRequest = request;
     },
     scheduleShoutout: function()
     {
-        if (null !== timedCallouts.timeoutID) {
+        if (timedCallouts.timeoutID !== null) {
             // We've got a timeout scheduled already, let's clear it.
             clearTimeout(timedCallouts.timeoutID);
         }
@@ -74,7 +75,7 @@ var timedCallouts = {
         var message = timedCallouts.config.callouts[Math.floor(Math.random()*timedCallouts.config.callouts.length)];
         if (message && message.trim().length) {
             console.log("scheduledShoutout: " + message);
-            //request.sendChat(message); //TODO : how do i send a message with no access to request?
+            timedCallouts.storedRequest.sendChat(message);
         }
 
         // Reschedule ourselves
