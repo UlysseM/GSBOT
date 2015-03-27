@@ -6,6 +6,8 @@ var ballot = {
         permission: ['isListener']
     },
     onCall: function(request) {
+        var contestCore = require('./contestCore.js');
+
         if (contestCore.status) {
             if (request.isGuest) {
                 request.sendChat("There are currently "+contestCore.users.length+" entries int he current contest. Type /ballot to enter too!");

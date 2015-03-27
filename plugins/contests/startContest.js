@@ -6,6 +6,8 @@ var startContest = {
         permission: ['guest']
     },
     onCall: function(request) {
+        var contestCore = require('./contestCore.js');
+
         contestCore.status = true;
         contestCore.users = [];
         contestCore.lastWinner = null;

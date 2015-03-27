@@ -4,10 +4,5 @@ var contestCore = {
     description: '- Retains the variables and data needed to run the contests',
     users: [],
     status: false,
-    lastWinner: null,
-    init: function(mods, request) {
-        contestCore.storedRequest = request;
-    }
+    lastWinner: null
 };
-
-module.exports = {mod: contestCore};

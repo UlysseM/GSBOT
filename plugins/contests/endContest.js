@@ -7,6 +7,8 @@ var endContest = {
     },
     winnersName: null,
     onCall: function(request) {
+        var contestCore = require('./contestCore.js');
+
         contestCore.status = false;
         request.sendChat("Drumroll please...")
 
@@ -18,6 +20,8 @@ var endContest = {
         }, 4000);
     },
     drawWinner: function(request) {
+        var contestCore = require('./contestCore.js');
+
         contestCore.lastWinner = contestCore.users[Math.floor(Math.random()*contestCore.users.length)];
         endContest.winnersName = request.getListenerNameFromId(contestCore.lastWinner);
         console.log("contest: winner selected. userid: "+contestCore.lastWinner+ " name: "+endContest.winnersName);
