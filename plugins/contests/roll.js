@@ -3,12 +3,13 @@ var roll = {
     name: 'roll',
     description: '- Roll a dice. default is 1d100 aka 1 , 100 sided dice. results will be between 1 and 100.',
     config: {
+        defaultDice: [1,100],
         permission: ['isListener']
     },
     onCall: function(request) {
         var numDice = 1;
         var typeDie = 100;
-        var diceArray = [1,100];
+        var diceArray = roll.config.defaultDice;
         if (request.params !== undefined)
             diceArray = request.params.split('d');
         var capped = false;
