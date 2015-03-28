@@ -4,7 +4,8 @@ var saveSong = {
     description: 'Send to the php database when a song changes.',
     config: {
         url: null,
-        key: null
+        key: null,
+        verboseErrors: false
     },
     onSongChange: function(request) {
         var http = require('http');
@@ -39,7 +40,13 @@ var saveSong = {
             var req = http.request(options, function(resp) {
                 console.log('saveSong response code: '+resp.statusCode);
                 resp.on('data', function(chunk) {
-                    request.sendChat(chunk);
+                    if (resp.statusCode == 403 && saveSong.config.verboseErrors) {
+                        request.sendChat('The song vote history was not saved to the database. It looks as though your api key needs to be updated in your GSBOT config.')
+                    }
+                    else if (saveSong.config.verboseErrors) {
+                        request.sendChat('There was an error code '+resp.statusCode+' encountered while saving the song vote history.')
+                        console.log('BODY: ' + chunk);
+                    }
                     console.log('HEADERS: '+JSON.stringify(resp.headers));
                 })
 
