@@ -3,7 +3,7 @@ PLUGINS
 
 One great feature of the GSBOT is its plugins system.
 
-When you create a new broadcast using the command line tool, only the '[default](plugins/default)' plugin is enabled. It constitutes a set of functions useful for any shared broadcast.
+When you create a new broadcast using the command line tool, only the '[default](./default)' plugin is enabled. It constitutes a set of functions useful for any shared broadcast.
 
 
 However, this repository contains some plugins created by the community. They can add all kinds of new functionality to the bot, from a stat module, to some scheduled shoutouts, and anything you could imagine.Make sure to read carefully the plugin description before enabling it.
