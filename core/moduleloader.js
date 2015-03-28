@@ -10,6 +10,7 @@ var moduleLoader = {
     onSongChange: [],
     onListenerJoin: [],
     onListenerLeave: [],
+    onListenerVote: [],
  },
 
  addAuthor: function(author) {

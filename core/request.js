@@ -133,4 +133,13 @@ function onSongChange(oldSong, oldVote, newSong)
     return req;
 }
 
-module.exports = {defaultConstructor: defaultConstructor, onCall: onCall, onSongChange: onSongChange, onUserAction: onUserAction};
+function onListenerVote(allVotes, userid, uservote)
+{
+    var req = new Request();
+    req.votes = allVotes;
+    req.userID = userid;
+    req.userVote = uservote;
+    return req;
+}
+
+module.exports = {defaultConstructor: defaultConstructor, onCall: onCall, onSongChange: onSongChange, onUserAction: onUserAction, onListenerVote: onListenerVote};

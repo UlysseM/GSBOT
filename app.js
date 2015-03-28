@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-GLOBAL.GSBOTVERSION = '2.0.9BETA';
+GLOBAL.GSBOTVERSION = '2.0.10BETA';
 
 var grooveshark = require('./core/grooveshark.js');
 var manatee = require('./core/manatee.js')
@@ -124,7 +124,17 @@ var GU = {
             }
         }
     },
-
+    OnListenerVote: function(allVotes, userid, uservote) {
+        if (GU.modCallback.onListenerVote.length)
+        {
+            var req = request.onListenerVote(allVotes, userid, uservote);
+            try {
+                GU.modCallback.onListenerVote.forEach(function(cb){cb(req)});
+            } catch (err) {
+                console.log(err.stack)
+            }
+        }
+    },
  },
 
  mergeConfig: function(bcConfig, masterConfig, depth) {

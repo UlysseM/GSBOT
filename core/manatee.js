@@ -22,7 +22,8 @@ var manatee = {
     OnSongChange: null,
     OnQueueChange: null,
     OnListenerJoin: null,
-    OnListenerLeave: null
+    OnListenerLeave: null,
+    OnListenerVote: null
  },
 
  getListeners: function() {
@@ -115,8 +116,12 @@ var manatee = {
                     manatee.rebuildData();
                 });
                 manatee.manateeSocket.on('close', function() {
-                    if (manatee.callback.OnSocketClose)
-                        manatee.callback.OnSocketClose();
+                    manatee.manateeSocket = null;
+                    manatee.init(undefined, undefined, function() {});
+                });
+                manatee.manateeSocket.on('error', function() {
+                    manatee.manateeSocket = null;
+                    manatee.init(undefined, undefined, function() {});
                 });
                 cb(manatee.manateeSocket);
             });
@@ -125,7 +130,7 @@ var manatee = {
  },
 
  sendManateeMessage: function (command, params, cb) {
-     manatee.getSocket(function (socket) {
+    manatee.getSocket(function (socket) {
         var blackboxId = ++manatee.blackboxId;
         manatee.blackboxCallback[blackboxId] = cb;
         var msg = JSON.stringify({command: command, params:params, blackbox: {_cid: blackboxId}});
@@ -219,7 +224,7 @@ var manatee = {
         });
  },
 
-sendChatMessage: function(msg, cb) {
+ sendChatMessage: function(msg, cb) {
     manatee.pub({
         type:"data",
         value: {
@@ -235,7 +240,7 @@ sendChatMessage: function(msg, cb) {
         async:false,
         persist:true
     }, cb);
-},
+ },
 
  globalCallback: function(type, msg) {
      console.log('{global callback}');
@@ -322,7 +327,7 @@ sendChatMessage: function(msg, cb) {
         }
         break;
     }
-  },
+ },
 
  broadcastCallback: function(type, msg) {
     console.log('{broadcast callback}');
@@ -390,6 +395,7 @@ sendChatMessage: function(msg, cb) {
                     manatee.currentTrack.votes.up[msg.id.userid] = 1;
                 else if (data.vote == -1)
                     manatee.currentTrack.votes.down[msg.id.userid] = 1;
+                manatee.callback.OnListenerVote(manatee.currentTrack.votes, msg.id.userid, data.vote);
             }
         }
         break;
@@ -688,8 +694,11 @@ sendChatMessage: function(msg, cb) {
  },
 
  init: function(userInfo, mancallback, cb) {
-    manatee.userInfo = userInfo;
-    manatee.callback = mancallback;
+    if (userInfo)
+    {
+        manatee.userInfo = userInfo;
+        manatee.callback = mancallback;
+    }
 
     manatee.getQueue(); // preload the queue now.
     manatee.getSocket(function() {
