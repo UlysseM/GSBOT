@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-GLOBAL.GSBOTVERSION = '2.0.11BETA';
+GLOBAL.GSBOTVERSION = '2.0.12-RC_1';
 
 var grooveshark = require('./core/grooveshark.js');
 var manatee = require('./core/manatee.js')

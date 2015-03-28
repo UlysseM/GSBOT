@@ -205,7 +205,6 @@ Queue.prototype.playRandom = function(cb) {
     if (this.addingTrack > 0)
         return;
     var trackId;
-    console.log(this.playedRecently);
     for (var i = 0; i < 10; ++i)
     {
         trackId = Math.floor(Math.random() * this.collection.length);
@@ -368,9 +367,10 @@ Queue.prototype.qClean = function(currentPlayingQueueId) {
         this.addPlayedRecently(this.tracks.shift().id);
         ++this.offsetTrack;
     }
-    this.addPlayedRecently(this.tracks[0].id);
     if (this.tracks.length == 0)
         this.askSync();
+    else
+        this.addPlayedRecently(this.tracks[0].id);
     console.log('LOCAL QUEUE STATUS: offset:' + this.offsetTrack + ', inside:');
     console.log(this.tracks);
 }

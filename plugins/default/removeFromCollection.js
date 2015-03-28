@@ -18,7 +18,10 @@ var removeFromCollection = {
         }
     }, function(cb) {
         if (cb)
+        {
             request.sendChat(song.sN + ' is no longer in the collection (if it has ever been there in the first place)!');
+            request.refreshLocalCollection();
+        }
     });
  }
 };
