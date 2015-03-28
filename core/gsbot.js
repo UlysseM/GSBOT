@@ -2,7 +2,7 @@ var grooveshark = require('./grooveshark.js');
 var manatee = require('./manatee.js')
 var moduleloader = require('./moduleloader.js');
 var request = require('./request.js');
- 
+
 var GU = {
  user: null,
  pingInterval: null,
@@ -10,11 +10,11 @@ var GU = {
  isWhiteListed: [],
  mods: {},
  modCallback: {},
- 
+
  getLastBroadcast: function(cb) {
      grooveshark.more({method: 'getUserLastBroadcast'}, false, cb);
   },
- 
+
   permissionList: {
      guest: function(userid) {
          return manatee.getQueue().guests.indexOf(userid) != -1 || GU.permissionList.isBroadcaster(userid); // a broadcaster could be doing everything a guest could do
@@ -32,7 +32,7 @@ var GU = {
          return true;
      }
   },
- 
+
   manateeCallback: {
      OnSocketClose: function() {
          console.log('Matanee socket is down.');
@@ -132,7 +132,7 @@ var GU = {
          }
      },
   },
- 
+
   mergeConfig: function(bcConfig, masterConfig, depth) {
      var bcKeys = Object.keys(bcConfig);
      var msKeys = Object.keys(masterConfig);
@@ -149,7 +149,7 @@ var GU = {
          }
      }
   },
- 
+
   // Call the callback with the user as a parameter, or null if the login failed.
  login: function(user, pass, cb) {
     if (user == '' || pass == '')
@@ -157,7 +157,7 @@ var GU = {
         cb(null);
         return;
     }
- 
+
     grooveshark.more({
         method: 'authenticateUser',
         parameters: {
@@ -176,7 +176,7 @@ var GU = {
         }
     });
  },
- 
+
  getFollowing: function() {
     grooveshark.more({method: 'getFavorites', parameters: {userID: GU.user.userID, ofWhat: "Users"}},
     false,
@@ -193,7 +193,7 @@ var GU = {
         {
             console.log('Logged successfully as ' + userinfo.FName);
             GU.getFollowing();
-			GU.isWhiteListed = obj.whiteList;
+            GU.isWhiteListed = obj.whiteList;
             GU.mods = moduleloader.getList(obj.config.plugins_enabled, obj.config.plugins_conf);
             GU.modCallback = moduleloader.getCallbackList(obj.config.plugins_enabled, obj.config.plugins_conf);
             GU.getLastBroadcast(function(lastBroadcast) {
@@ -202,10 +202,10 @@ var GU = {
                         if (success)
                             console.log("We are now broadcasting!");
                         else
-						{
+                        {
                             console.log("Something wrong happened, please submit a bug report containing the logs.");
-							process.exit(0);
-						}
+                            process.exit(0);
+                        }
                     });
                     GU.pingInterval = setInterval(function(){manatee.ping()}, 30000);
                 });
@@ -214,13 +214,13 @@ var GU = {
         else
         {
             console.log('Error: cannot login. Probably a wrong login / password. Edit the config.json file or run the reconfigure script.');
-			process.exit(0);
+            process.exit(0);
         }
     });
  }
 };
 
 process.on('message', function(obj) {
-	GLOBAL.GSBOTVERSION = obj.version;
-	GU.init(obj);
+    GLOBAL.GSBOTVERSION = obj.version;
+    GU.init(obj);
 });
