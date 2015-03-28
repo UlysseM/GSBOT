@@ -24,8 +24,8 @@ var help = {
     msg += '. Type /help [command name] for in depth help.';
     request.sendChat(msg);
  },
- init: function(mods) {
-    help.mods = mods;
+ init: function(obj) {
+    help.mods = obj.modList;
  }
 };
 

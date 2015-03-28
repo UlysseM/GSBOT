@@ -18,6 +18,11 @@ function Queue(manatee) {
     // The list of current Guest
     this.guests = [];
 
+    // This list will be filled whenever a song is played OR was added randomly.
+    this.playedRecently = [];
+    // The max size of the playRecently array.
+    this.playedRecentlyLimit = 50;
+
     // We don't store any played track in the queue, so we use this offset.
     this.offsetTrack = 0;
     // set it to the higher queueTrackID encountered.
@@ -34,25 +39,36 @@ function Queue(manatee) {
     this.lastCollectionQueueTrackId = -1;
 
     // recover the collection
-    {
-        var more = require('./grooveshark.js').more;
-        var that = this;
-        more({
-            method:'userGetSongIDsInLibrary',
-            parameters: {}
-        }, false, function(data) {
-            if (data && data.SongIDs)
-            {
-                if (data.SongIDs.length)
-                {
-                    that.collection = data.SongIDs;
-                }
-                else
-                    console.log('Your collection is empty, it will play the default song.');
-            }
-        });
-    }
+    this.refreshCollection();
 }
+
+Queue.prototype.refreshCollection = function() {
+    var more = require('./grooveshark.js').more;
+    var that = this;
+    more({
+        method:'userGetSongIDsInLibrary',
+        parameters: {}
+    }, false, function(data) {
+        if (!(data && data.SongIDs))
+            data = {SongIDs: []}; // create the data.SongIDs array
+        more({
+            method:'userGetFavoriteSongsSongIDs',
+            parameters: {}
+        }, false, function(favs) {
+            if (favs && favs instanceof Array)
+            {
+                favs.forEach(function(fav) {
+                    if (data.SongIDs.indexOf(fav) == -1)
+                        data.SongIDs.push(fav);
+                });
+            }
+            if (data.SongIDs.length)
+                that.collection = data.SongIDs;
+            else
+                console.log('Your collection AND favorite are empty, going to play the default song...');
+        });
+    });
+};
 
 // Guest someone (or unguest if permission == 0)
 Queue.prototype.makeGuest = function(userID, permission, cb) {
@@ -82,7 +98,7 @@ Queue.prototype.makeGuest = function(userID, permission, cb) {
         async:false,
         persist:false
     }, cb);
-}
+};
 
 // submit to the server a song to be added at the end of the queue
 Queue.prototype.addSong = function(songid, cb) {
@@ -188,10 +204,27 @@ Queue.prototype.playRandom = function(cb) {
     }
     if (this.addingTrack > 0)
         return;
-    var trackId = Math.floor(Math.random() * this.collection.length);
+    var trackId;
+    console.log(this.playedRecently);
+    for (var i = 0; i < 10; ++i)
+    {
+        trackId = Math.floor(Math.random() * this.collection.length);
+        if (this.playedRecently.indexOf(trackId) == -1)
+            break;
+    }
+    this.addPlayedRecently(trackId);
     this.addSong(this.collection[trackId], cb);
     this.lastCollectionQueueTrackId = this.availableQueueTrackId - 1;
-}
+};
+
+Queue.prototype.addPlayedRecently = function(songid) {
+    var pos = this.playedRecently.indexOf(songid);
+    if (pos != -1)
+        this.playedRecently.splice(pos, 1);
+    this.playedRecently.push(songid);
+    if (this.playedRecently.length > this.playedRecentlyLimit)
+        this.playedRecently.shift();
+};
 
 // Ask the server to skip the current song
 Queue.prototype.skip = function() {
@@ -332,9 +365,10 @@ Queue.prototype.qClean = function(currentPlayingQueueId) {
         this.currentQueueTrackId = currentPlayingQueueId;
     while (this.tracks.length && this.tracks[0].qid != this.currentQueueTrackId)
     {
-        this.tracks.shift();
+        this.addPlayedRecently(this.tracks.shift().id);
         ++this.offsetTrack;
     }
+    this.addPlayedRecently(this.tracks[0].id);
     if (this.tracks.length == 0)
         this.askSync();
     console.log('LOCAL QUEUE STATUS: offset:' + this.offsetTrack + ', inside:');

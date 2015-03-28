@@ -25,26 +25,57 @@ var grooveshark = {
  },
 
  callbackJson: function(res, cb) {
-    grooveshark.callback(res, function(data){cb(JSON.parse(data).result);});
+    grooveshark.callback(res, function(str) {
+        cb(JSON.parse(str));
+    });
+ },
+
+ getTokenData: function(cookie, cb) {
+    var options = {
+        hostname: grooveshark.url,
+        path: '/preload.php?getCommunicationToken=1',
+        method: 'GET',
+        headers: {
+            Cookie: cookie
+        },
+    };
+
+    require('http').get(options, function(res) {
+        grooveshark.callback(res, function(content) {
+            var tokenData = JSON.parse(content.substring(content.indexOf('{'), content.indexOf('\n') - 1));
+            var md5sum = require('crypto').createHash('md5');
+            md5sum.update(tokenData.getGSConfig.sessionID);
+            tokenData.getGSConfig.sessionPart = md5sum.digest('hex').substr(0, 6);
+            cb(tokenData);
+        })
+    }).on('error', function(e) {
+        console.log('ERROR while creating the session, please restart the bot.', e.message);
+        throw e;
+    });
  },
 
  // Callback the cb with the SSID as a parameter.
- getSession: function(cb) {
-    if (grooveshark.tokenData != null)
+ getSession: function(cb, force) {
+    if (grooveshark.tokenData != null && force !== true)
     {
         cb(grooveshark.tokenData);
     }
     else
     {
-        require('http').get('http://' + grooveshark.url + '/preload.php?getCommunicationToken=1',
-            function(res){grooveshark.callback(res, function(content) {
-                grooveshark.tokenData = JSON.parse(content.substring(content.indexOf('{'), content.indexOf('\n') - 1));
-                var md5sum = require('crypto').createHash('md5');
-                md5sum.update(grooveshark.tokenData.getGSConfig.sessionID);
-                grooveshark.tokenData.getGSConfig.sessionPart = md5sum.digest('hex').substr(0, 6);
+        if (grooveshark.tokenData)
+        {
+            grooveshark.getTokenData('PHPSESSID=' + grooveshark.tokenData.getGSConfig.sessionID, function (tokenData) {
+                grooveshark.tokenData.getCommunicationToken = tokenData.getCommunicationToken;
                 cb(grooveshark.tokenData);
             });
-        });
+        }
+        else
+        {
+            grooveshark.getTokenData('', function (tokenData) {
+                grooveshark.tokenData = tokenData;
+                cb(grooveshark.tokenData);
+            });
+        }
     }
  },
 
@@ -79,7 +110,28 @@ var grooveshark = {
             parameters: obj.parameters
         };
 
-        var request = (secure ? require('https') : require('http')).request(options, function(res){grooveshark.callbackJson(res, cb);});
+        var request = (secure ? require('https') : require('http')).request(options, function(res){
+            grooveshark.callbackJson(res, function(jsonData) {
+                if (jsonData.fault)
+                {
+                    if (fault.code == 256) // expired token
+                    {
+                        grooveshark.getSession(function(tokenData) {
+                            grooveshark.more(obj, secure, cb);
+                        }, true); // force new token
+                    }
+                    else
+                    {
+                        cb(jsonData.fault); // could create a crash if the plugin author isn't careful, but it could also provide good debug info.
+                    }
+                    cb(jsonData);
+                }
+                else
+                    cb(jsonData.result);
+            });
+        });
+
+        request.on('error', function(err) {console.log('MORE ERROR: ', err.message, ' With request ', payload); cb();});
         request.write(JSON.stringify(payload));
         request.end();
     });
