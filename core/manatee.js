@@ -354,6 +354,15 @@ var manatee = {
             }
         }
         break;
+    case 'publish':
+        if (msg.value && msg.value.type == 'broadcastOwnerEnded') // Someone killed the broadcast (Boooo) let's send a message to tell listener it's not the bot's fault, and exit this instance.
+        {
+            manatee.sendChatMessage('BOT ERROR: someone logged in the account and clicked on "Stop Broadcasting" :(. The broadcast will be back shortly...', function()
+            {
+                throw 'SOMEONE KILLED THE BOT at ' + Date();
+            });
+        }
+        break;
     case 'sub_alert':
         if (msg.id)
         {
