@@ -5,12 +5,14 @@ var startContest = {
     config: {
         permission: ['guest']
     },
+    shared: {},
+    init: function(obj) {
+        startContest.shared = obj.sharedObject;
+    },
     onCall: function(request) {
-        var contestCore = require('./contestCore.js');
-
-        contestCore.status = true;
-        contestCore.users = [];
-        contestCore.lastWinner = null;
+        startContest.shared.status = true;
+        startContest.shared.users = [];
+        startContest.shared.lastWinner = null;
         request.sendChat("A Broadcast Contest has been started! Please type /ballot to join the contest!")
     }
 };

@@ -5,16 +5,18 @@ var ballot = {
     config: {
         permission: ['isListener']
     },
+    shared: {},
+    init: function(obj) {
+        ballot.shared = obj.sharedObject;
+    },
     onCall: function(request) {
-        var contestCore = require('./contestCore.js');
-
-        if (contestCore.status) {
+        if (ballot.shared.status) {
             if (request.isGuest) {
-                request.sendChat("There are currently "+contestCore.users.length+" entries int he current contest. Type /ballot to enter too!");
+                request.sendChat("There are currently "+ballot.shared.users.length+" entries int he current contest. Type /ballot to enter too!");
             }
             else {
-                if (contestCore.users.indexOf(request.userID) == -1) contestCore.users.push(request.userID);
-                console.log(contestCore.users);
+                if (ballot.shared.users.indexOf(request.userID) == -1) ballot.shared.users.push(request.userID);
+                console.log(ballot.shared.users);
             }
         }
         else {

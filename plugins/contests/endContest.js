@@ -6,13 +6,20 @@ var endContest = {
         permission: ['guest']
     },
     winnersName: null,
+    shared: {},
+    init: function(obj) {
+        endContest.shared = obj.sharedObject;
+    },
     onCall: function(request) {
-        var contestCore = require('./contestCore.js');
-
-        contestCore.status = false;
+        endContest.shared.status = false;
         request.sendChat("Drumroll please...")
+        endContest.shared.attempts = 0;
 
         while(endContest.winnersName === null) {
+            if (endContest.shared.attempts >= endContest.shared.users.length) {
+                request.sendChat("...We couldn't find anyone who is still online that entered the contest. Sorry about that :(");
+                return;
+            }
             endContest.drawWinner(request); // make sure the user is still logged in.
         }
         setTimeout(function() {
@@ -20,11 +27,10 @@ var endContest = {
         }, 4000);
     },
     drawWinner: function(request) {
-        var contestCore = require('./contestCore.js');
-
-        contestCore.lastWinner = contestCore.users[Math.floor(Math.random()*contestCore.users.length)];
-        endContest.winnersName = request.getListenerNameFromId(contestCore.lastWinner);
-        console.log("contest: winner selected. userid: "+contestCore.lastWinner+ " name: "+endContest.winnersName);
+        endContest.shared.attempts++;
+        endContest.shared.lastWinner = endContest.shared.users[Math.floor(Math.random()*endContest.shared.users.length)];
+        endContest.winnersName = request.getListenerNameFromId(endContest.shared.lastWinner);
+        console.log("contest: winner selected. userid: "+endContest.shared.lastWinner+ " name: "+endContest.winnersName);
     }
 };
 
