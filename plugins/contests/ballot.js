@@ -12,7 +12,7 @@ var ballot = {
     onCall: function(request) {
         if (ballot.shared.status) {
             if (request.isGuest) {
-                request.sendChat("There are currently "+ballot.shared.users.length+" entries int he current contest. Type /ballot to enter too!");
+                request.sendChat("There are currently "+ballot.shared.users.length+" entries in the current contest. Type /ballot to enter too!");
             }
             else {
                 if (ballot.shared.users.indexOf(request.userID) == -1) ballot.shared.users.push(request.userID);
