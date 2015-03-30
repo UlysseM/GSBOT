@@ -51,7 +51,10 @@ var saveSong = {
                 })
 
 
-            })
+            });
+            req.on('error', function(e) {
+                console.log('saveSong error caught: ' + e.message);
+            });
             req.write(payload);
             req.end();
         }
