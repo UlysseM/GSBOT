@@ -68,6 +68,10 @@ Request.prototype.getTracksInQueue = function() {
     return tracksCpy;
 }
 
+Request.prototype.refreshLocalCollection = function() {
+    manatee.getQueue().refreshCollection();
+}
+
 Request.prototype.removeSongsFromQueue = function(queueSongIDs) {
     manatee.getQueue().removeSongs(queueSongIDs);
 }

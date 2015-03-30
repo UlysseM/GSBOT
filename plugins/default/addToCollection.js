@@ -33,7 +33,10 @@ var addToCollection = {
                 }
             }, function(cb) {
                 if (cb && cb.Timestamps.affectedRows == 1)
+                {
                     request.sendChat(song.sN + ' was added to the broadcaster\'s collection!');
+                    request.refreshLocalCollection();
+                }
                 else if (cb)
                     request.sendChat(song.sN + ' already is in the broadcaster\'s collection!');
             });

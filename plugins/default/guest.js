@@ -6,6 +6,8 @@ var guest = {
     permission: ['guest', 'isFollowed', 'isWhiteListed']
  },
  onCall: function(request) {
+    if (request.userID == request.getBroadcastInfo().userID)
+        return;
     if (request.isGuest)
         request.makeGuest(request.userID, 0);
     else

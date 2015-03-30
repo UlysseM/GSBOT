@@ -10,7 +10,9 @@ IMPORTANT
 
 Grooveshark just updated their service, the bot is moving from a webbrowser extension to a standalone nodejs app.
 
-Due to the complete refactoring, **this is a BETA version, expect bugs, crashes, and other annoyances**. If you want to create your own plugins, please open a ticket so we can discuss the easier way to implement it.
+This product is in the 'Release Candidate' state. It has run multiple days without crashing and is now becoming quite stable.
+
+If you want to create your own plugins, please open a ticket so we can discuss the easier way to implement it.
 
 Featuring
 ---------
@@ -30,6 +32,10 @@ Featuring
 ✓ A plugin system:
 
  -In order to add new features to the bot, just add a folder in the plugin, run the EnablePlugin script and restart the bot!
+
+✓ Host Multiple Broadcast:
+
+ -This bot will run as many broadcast as you want at the same time. You can share your configuration between all broadcast, and set particular rule to one broadcast in particular.
 
 ✓ An advanced configuration system:
 
@@ -76,11 +82,13 @@ The configuration is a tree build the following way:
             PARAMETER_NAME: "JSON_VALUE"
           }
         },
+       whiteList: [ userid1, userid2 ]
       },
       password: BROADCASTPASSWORD,
     },
   },
-  plugins_conf: {}, // Same as above, except it applies for ALL broadcast
+  plugins_conf: {}, // Same as above, except it applies for ALL broadcasts (except when rule are overwritten locally)
+  whiteList: [user3] // This whitelist will apply to ALL broadcasts
 }
 ```
 

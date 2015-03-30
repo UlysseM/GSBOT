@@ -114,7 +114,7 @@ var grooveshark = {
             grooveshark.callbackJson(res, function(jsonData) {
                 if (jsonData.fault)
                 {
-                    if (fault.code == 256) // expired token
+                    if (jsonData.fault.code == 256) // expired token
                     {
                         grooveshark.getSession(function(tokenData) {
                             grooveshark.more(obj, secure, cb);
