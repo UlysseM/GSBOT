@@ -10,6 +10,7 @@ var moduleLoader = {
     onSongChange: [],
     onListenerJoin: [],
     onListenerLeave: [],
+    onListenerVote: [],
  },
 
  addAuthor: function(author) {
@@ -26,7 +27,7 @@ var moduleLoader = {
     }
  },
 
- loadModule: function(module, user_conf) {
+ loadModule: function(module, user_conf, sharedObject) {
     if (module.config && user_conf)
     {
         var modConfig = module.config;
@@ -55,7 +56,11 @@ var moduleLoader = {
     });
     if (init && typeof module.init == 'function')
     {
-        module.init(moduleLoader.moduleList, request.defaultConstructor());
+        module.init({
+            modList:moduleLoader.moduleList,
+            request: request.defaultConstructor(),
+            sharedObject: sharedObject,
+        });
     }
  },
 
@@ -100,8 +105,9 @@ var moduleLoader = {
         if (plugins_enabled.indexOf(pluginName) != -1) // loading this plugin
         {
             var plugin = plugins[pluginName];
+            var sharedObject = {};
             Object.keys(plugin).forEach(function(moduleName) { // loading all the module in this plugin
-                moduleLoader.loadModule(plugin[moduleName], plugins_conf[pluginName] ? plugins_conf[pluginName][moduleName] : undefined);
+                moduleLoader.loadModule(plugin[moduleName], plugins_conf[pluginName] ? plugins_conf[pluginName][moduleName] : undefined, sharedObject);
             });
         }
     });

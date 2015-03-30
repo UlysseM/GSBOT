@@ -51,9 +51,9 @@ var timedCallouts = {
         }
 
     },
-    init: function(mods, request) {
+    init: function(obj) {
         timedCallouts.scheduleShoutout();
-        timedCallouts.storedRequest = request;
+        timedCallouts.storedRequest = obj.request;
     },
     scheduleShoutout: function()
     {
