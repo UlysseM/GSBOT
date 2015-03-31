@@ -32,7 +32,7 @@ var timedCallouts = {
                 // add a callout
                 args.splice(0,1);
                 var newCallout = args.join(' ');
-                //timedCallouts.config.timedCallouts.push(newCallout);
+                timedCallouts.config.callouts.push(newCallout);
                 request.sendChat("Added a callout: " + newCallout);
             }
             else if (args[0] == "del") {

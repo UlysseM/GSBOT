@@ -1,4 +1,3 @@
-/*
 # dbhistory plugin for GSBOT
 
 This plugin provides you the ability to save song play stats, keep records, voting history and listener counts over extended periods of time.
@@ -43,5 +42,3 @@ You can also change the permissions requires to call the /stats command by overr
 # Commands
 
 users can lookup the stats for the currently playing song by issuing a /stats command. An optional argument can also be passed of a SongID to override the currently playing song, and look up any song in the database. The results will only be returned for data from the last 30 days.
-
-*/
