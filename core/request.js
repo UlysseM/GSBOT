@@ -135,7 +135,7 @@ function onCall(userID, followingList, whiteList, params)
     req.userID = userID;
     req.isGuest = manatee.getQueue().guests.indexOf(userID) != -1;
     req.isFollowing = followingList.indexOf(userID) != -1;
-    req.isWhiteListed = whiteList.indexof(userID) != -1;
+    req.isWhiteListed = whiteList.indexOf(userID) != -1;
     req.params = params;
     return req;
 }
