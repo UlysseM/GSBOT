@@ -102,6 +102,26 @@ Request.prototype.getListenerNameFromId = function(userid) {
     return manatee.getListeners().getNameFromId(userid);
 }
 
+Request.prototype.getSuggestions = function() {
+    return manatee.getSuggestions().songs;
+}
+
+Request.prototype.getBlockedSongsId = function() {
+    return manatee.getSuggestions().blackList.slice();
+}
+
+Request.prototype.approveSuggestion = function(sid, cb) {
+    manatee.getSuggestions().approveSuggestion(sid, cb);
+}
+
+Request.prototype.removeSuggestion = function(sid, cb) {
+    manatee.getSuggestions().removeSuggestion(sid, cb);
+}
+
+Request.prototype.banSuggestion = function(sid, cb) {
+    manatee.getSuggestions().banSuggestion(sid, cb);
+}
+
 /********* CONSTRUCTORS *********/
 
 function defaultConstructor()

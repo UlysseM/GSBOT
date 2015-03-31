@@ -11,6 +11,7 @@ var manatee = {
  blackboxCallback: [],
  subCallback: {},
  queue: null,
+ suggestions: null,
  listeners: null,
  currentTrack: null,
  broadcastDesc: '',
@@ -42,6 +43,14 @@ var manatee = {
         manatee.queue = new Queue(manatee);
     }
     return manatee.queue;
+ },
+
+ getSuggestions: function() {
+    if (!manatee.suggestions)
+    {
+        manatee.suggestions = new (require('./suggestions.js').Suggestions)(manatee);
+    }
+    return manatee.suggestions;
  },
 
  manateeCallBackOnMessage: function(message) {
@@ -320,6 +329,18 @@ var manatee = {
                 if (msg.value.response && msg.value.response.songs)
                     manatee.getQueue().qAddSongs(msg.value.response.songs);
                 break;
+            case 'approveSuggestion':
+            case 'rejectSuggestion':
+                if (msg.value.songID && msg.id.userid)
+                {
+                    var data = manatee.getSuggestions().removeSong(msg.value.songID, msg.id.userid);
+                    var action = (msg.value == 'approveSuggestion' ? 1 : (msg.value.block == 0 ? 0 : -1));
+                    if (action == -1)
+                        manatee.getSuggestions().blackList.push(msg.value.songID);
+                    if (data)
+                        ;// callback approval / reject / ban
+                }
+                break;
             default:
                 console.log("NOT CHECKING " + msg.value.action); // todo
                 break;
@@ -352,6 +373,8 @@ var manatee = {
                 console.log("NEXT IS NULL! Adding track for smooth transition.");
                 manatee.getQueue().playRandom();
             }
+            if (msg.params.sgc)
+                manatee.getSuggestions().processSgc(msg.params.sgc);
         }
         break;
     case 'publish':
@@ -384,30 +407,35 @@ var manatee = {
 
  broadcastChatCallback: function(type, msg) {
     console.log('{broadcast chat callback}');
-    switch (type)
+    if (type == 'publish' && msg.value)
     {
-    case 'publish':
-        if (msg.value && msg.value.type == 'chat')
+        var data = msg.value.data;
+        var userID = parseInt(msg.id.userid);
+        switch (msg.value.type)
         {
+        case 'chat':
             if (manatee.callback.OnChatMessageRcv)
-                manatee.callback.OnChatMessageRcv(parseInt(msg.id.userid), msg.value.data);
-            return;
-        }
-        if (msg.value && msg.value.type == 'activeSongVote')
-        {
-            var data = msg.value.data;
+                manatee.callback.OnChatMessageRcv(userID, data);
+            break;
+        case 'activeSongVote':
             if (manatee.currentTrack && manatee.currentTrack.votes && manatee.currentTrack.votes.queueSongID == data.queueSongID)
             {
-                delete manatee.currentTrack.votes.up[msg.id.userid];
-                delete manatee.currentTrack.votes.down[msg.id.userid];
+                delete manatee.currentTrack.votes.up[userID];
+                delete manatee.currentTrack.votes.down[userID];
                 if (data.vote == 1)
-                    manatee.currentTrack.votes.up[msg.id.userid] = 1;
+                    manatee.currentTrack.votes.up[userID] = 1;
                 else if (data.vote == -1)
-                    manatee.currentTrack.votes.down[msg.id.userid] = 1;
-                manatee.callback.OnListenerVote(manatee.currentTrack.votes, msg.id.userid, data.vote);
+                    manatee.currentTrack.votes.down[userID] = 1;
+                manatee.callback.OnListenerVote(manatee.currentTrack.votes, userID, data.vote);
             }
+            break;
+        case 'suggestion':
+            manatee.getSuggestions().addSuggestion(data.songID, data.song.b, userID);
+            break;
+        case 'suggestionRemove':
+            manatee.getSuggestions().delSuggestion(data.songID, userID);
+            break;
         }
-        break;
     }
  },
 
@@ -674,6 +702,10 @@ var manatee = {
                 {
                     manatee.getQueue().currentQueueTrackId = ret[0].params.s.active.queueSongID;
                 }
+                if (ret[1].params)
+                {
+                    manatee.getSuggestions().processSgc(ret[1].params.sgc);
+                }
                 manatee.takeOverBroadcast(cb);
             });
         }
@@ -742,6 +774,7 @@ module.exports = {
  broadcast: manatee.broadcast,
  getQueue: manatee.getQueue,
  getListeners: manatee.getListeners,
+ getSuggestions: manatee.getSuggestions,
  init: manatee.init,
  ping: manatee.ping,
  sendChatMessage: manatee.sendChatMessage,
