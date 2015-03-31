@@ -124,7 +124,6 @@ var grooveshark = {
                     {
                         cb(jsonData.fault); // could create a crash if the plugin author isn't careful, but it could also provide good debug info.
                     }
-                    cb(jsonData);
                 }
                 else
                     cb(jsonData.result);

@@ -3,7 +3,7 @@ var beQuiet = {
  name: 'beQuiet',
  description: '- Toogle the quiet mode, where listeners cannot run modules that require the permission isListener.',
  config: {
-    permission: ['isWhiteListed']
+    permission: ['isWhiteListed', 'isBroadcaster']
  },
  onCall: function(request) {
     GLOBAL.GSBOT_QUIET = !GLOBAL.GSBOT_QUIET;
