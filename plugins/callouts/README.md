@@ -1,4 +1,3 @@
-/*
 # callouts plugin for GSBOT
 
 This plugin provides you the ability to set a single or multiple scheduled messages that will be said on an interval you specify into your GS Broadcast.
@@ -33,6 +32,3 @@ You can also change the permissions requires to call the /callouts command by ov
 
 - /callout del #: this will allow the admins to remove a callout from rotation. There is no way to edit a callout, so you must remove existing ones and add new ones in order to edit them.
 - /callout add <text>: everything provided after the add argument will be constructed and added to the callout rotation.
-
-
-*/

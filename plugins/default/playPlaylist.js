@@ -3,14 +3,19 @@ var playPlaylist = {
  name: 'playPlaylist',
  description: '- add a playlist to the end of the current broadcast queue by the provided playlist ID.',
  config: {
-    permission: ['guest']
+    permission: ['guest'],
+    defaultList: null
  },
  onCall: function(request) {
     // find the playlist id in the command, and error check it.
     var playlistID = parseInt(request.params);
     if (!(playlistID > 0)) {
-        request.sendChat('There was a problem parsing an ID from your command.');
-        return false;
+        if (playPlaylist.config.defaultList !== null) {
+            playlistID = playPlaylist.config.defaultList;
+        } else {
+            request.sendChat('There was a problem parsing an ID from your command.');
+            return false;
+        }
     }
 
     // start by getting the songs in the playlist
