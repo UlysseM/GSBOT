@@ -3,6 +3,8 @@ var manatee = require('./manatee.js')
 var moduleloader = require('./moduleloader.js');
 var request = require('./request.js');
 
+GLOBAL.GSBOT_QUIET = false;
+
 var GU = {
  user: null,
  pingInterval: null,
@@ -12,143 +14,144 @@ var GU = {
  modCallback: {},
 
  getLastBroadcast: function(cb) {
-     grooveshark.more({method: 'getUserLastBroadcast'}, false, cb);
-  },
+    grooveshark.more({method: 'getUserLastBroadcast'}, false, cb);
+ },
 
-  permissionList: {
-     guest: function(userid) {
-         return manatee.getQueue().guests.indexOf(userid) != -1 || GU.permissionList.isBroadcaster(userid); // a broadcaster could be doing everything a guest could do
-     },
-     isFollowed: function(userid) {
-         return GU.isFollowed.indexOf(userid) != -1;
-     },
-     isBroadcaster: function(userid) {
-         return userid == GU.user.userID;
-     },
-     isWhiteListed: function(userid) {
-         return GU.isWhiteListed.indexOf(userid) != -1;
-     },
-     isListener: function(userid) {
-         return true;
-     }
-  },
+ permissionList: {
+    guest: function(userid) {
+        return manatee.getQueue().guests.indexOf(userid) != -1 || GU.permissionList.isBroadcaster(userid); // a broadcaster could be doing everything a guest could do
+    },
+    isFollowed: function(userid) {
+        return GU.isFollowed.indexOf(userid) != -1;
+    },
+    isBroadcaster: function(userid) {
+        return userid == GU.user.userID;
+    },
+    isWhiteListed: function(userid) {
+        return GU.isWhiteListed.indexOf(userid) != -1;
+    },
+    isListener: function(userid) {
+        return !GLOBAL.GSBOT_QUIET;
+    }
+ },
 
-  manateeCallback: {
-     OnSocketClose: function() {
-         console.log('Matanee socket is down.');
-     },
-     OnChatMessageRcv: function(userid, msg) {
-         var regexp = RegExp('^/([a-zA-Z]*)([ ]+(.+))?$');
-         var regResult = regexp.exec(msg);
-         if (regResult != null)
-         {
-             var mod = GU.mods[regResult[1]];
-             var req = request.onCall(userid, GU.isFollowed, regResult[3]);
-             // TODO: add functionality for eventSilence toggle that when enabled, will silence all non-guest initaiated output, and turn off auto-queuing.
-             if (mod && (!mod.config || !mod.config.permission || mod.config.permission.some(function(pname){
-                 if (typeof GU.permissionList[pname] != 'function')
-                     return false;
-                 return GU.permissionList[pname](userid);
-             })))
-             {
-                 try {
-                     mod.onCall(req);
-                 } catch (err) {
-                     manatee.sendChatMessage("BOT WARNING: The extension " + mod.name + " by " + mod.author + " threw an error...");
-                     console.log(err.stack);
-                 }
-             }
-             else if (mod)
-             {
-                 manatee.sendChatMessage("You do not meet the following permission: " + mod.config.permission);
-             }
-         }
-         if (userid != GU.user.userID)
-         {
-             if (GU.modCallback.onChatMessageRcv.length)
-             {
-                 var req = request.onCall(userid, GU.isFollowed, msg);
-                 try {
-                     GU.modCallback.onChatMessageRcv.forEach(function(cb){cb(req)});
-                 } catch (err) {
-                     console.log(err.stack)
-                 }
-             }
-         }
-     },
-     OnSongChange: function(oldSong, oldVote, newSong) {
-         if (GU.modCallback.onSongChange.length)
-         {
-             var req = request.onSongChange(oldSong, oldVote, newSong);
-             try {
-                 GU.modCallback.onSongChange.forEach(function(cb){cb(req)});
-             } catch (err) {
-                 console.log(err.stack)
-             }
-         }
-     },
-     OnQueueChange: function() {
-         if (GU.modCallback.onQueueChange.length)
-         {
-             var req = request.defaultConstructor();
-             try {
-                 GU.modCallback.onQueueChange.forEach(function(cb){cb(req)});
-             } catch (err) {
-                 console.log(err.stack)
-             }
-         }
-     },
-     OnListenerJoin: function(userobj) {
-         if (GU.modCallback.onListenerJoin.length)
-         {
-             var req = request.onUserAction(userobj);
-             try {
-                 GU.modCallback.onListenerJoin.forEach(function(cb){cb(req)});
-             } catch (err) {
-                 console.log(err.stack)
-             }
-         }
-     },
-     OnListenerLeave: function(userobj) {
-         if (GU.modCallback.onListenerLeave.length)
-         {
-             var req = request.onUserAction(userobj);
-             try {
-                 GU.modCallback.onListenerLeave.forEach(function(cb){cb(req)});
-             } catch (err) {
-                 console.log(err.stack)
-             }
-         }
-     },
-     OnListenerVote: function(allVotes, userid, uservote) {
-         if (GU.modCallback.onListenerVote.length)
-         {
-             var req = request.onListenerVote(allVotes, userid, uservote);
-             try {
-                 GU.modCallback.onListenerVote.forEach(function(cb){cb(req)});
-             } catch (err) {
-                 console.log(err.stack)
-             }
-         }
-     },
-  },
+ manateeCallback: {
+    OnSocketClose: function() {
+        console.log('Matanee socket is down.');
+    },
+    OnChatMessageRcv: function(userid, msg) {
+        var regexp = RegExp('^/([a-zA-Z]*)([ ]+(.+))?$');
+        var regResult = regexp.exec(msg);
+        if (regResult != null)
+        {
+            var mod = GU.mods[regResult[1]];
+            var req = request.onCall(userid, GU.isFollowed, GU.isWhiteListed, regResult[3]);
+            // TODO: add functionality for eventSilence toggle that when enabled, will silence all non-guest initaiated output, and turn off auto-queuing.
+            if (mod && (!mod.config || !mod.config.permission || mod.config.permission.some(function(pname){
+                if (typeof GU.permissionList[pname] != 'function')
+                    return false;
+                return GU.permissionList[pname](userid);
+            })))
+            {
+                try {
+                    mod.onCall(req);
+                } catch (err) {
+                    manatee.sendChatMessage("BOT WARNING: The extension " + mod.name + " by " + mod.author + " threw an error...", true);
+                    console.log(err.stack);
+                }
+            }
+            else if (mod)
+            {
+                if (!GLOBAL.GSBOT_QUIET)
+                    manatee.sendChatMessage("You do not meet the following permission: " + mod.config.permission);
+            }
+        }
+        if (userid != GU.user.userID)
+        {
+            if (GU.modCallback.onChatMessageRcv.length)
+            {
+                var req = request.onCall(userid, GU.isFollowed, msg);
+                try {
+                    GU.modCallback.onChatMessageRcv.forEach(function(cb){cb(req)});
+                } catch (err) {
+                    console.log(err.stack)
+                }
+            }
+        }
+    },
+    OnSongChange: function(oldSong, oldVote, newSong) {
+        if (GU.modCallback.onSongChange.length)
+        {
+            var req = request.onSongChange(oldSong, oldVote, newSong);
+            try {
+                GU.modCallback.onSongChange.forEach(function(cb){cb(req)});
+            } catch (err) {
+                console.log(err.stack)
+            }
+        }
+    },
+    OnQueueChange: function() {
+        if (GU.modCallback.onQueueChange.length)
+        {
+            var req = request.defaultConstructor();
+            try {
+                GU.modCallback.onQueueChange.forEach(function(cb){cb(req)});
+            } catch (err) {
+                console.log(err.stack)
+            }
+        }
+    },
+    OnListenerJoin: function(userobj) {
+        if (GU.modCallback.onListenerJoin.length)
+        {
+            var req = request.onUserAction(userobj);
+            try {
+                GU.modCallback.onListenerJoin.forEach(function(cb){cb(req)});
+            } catch (err) {
+                console.log(err.stack)
+            }
+        }
+    },
+    OnListenerLeave: function(userobj) {
+        if (GU.modCallback.onListenerLeave.length)
+        {
+            var req = request.onUserAction(userobj);
+            try {
+                GU.modCallback.onListenerLeave.forEach(function(cb){cb(req)});
+            } catch (err) {
+                console.log(err.stack)
+            }
+        }
+    },
+    OnListenerVote: function(allVotes, userid, uservote) {
+        if (GU.modCallback.onListenerVote.length)
+        {
+            var req = request.onListenerVote(allVotes, userid, uservote);
+            try {
+                GU.modCallback.onListenerVote.forEach(function(cb){cb(req)});
+            } catch (err) {
+                console.log(err.stack)
+            }
+        }
+    },
+ },
 
-  mergeConfig: function(bcConfig, masterConfig, depth) {
-     var bcKeys = Object.keys(bcConfig);
-     var msKeys = Object.keys(masterConfig);
-     for (var i = 0; i < bcKeys.length; ++i)
-     {
-         var curr = bcKeys[i];
-         if (msKeys.indexOf(curr) == -1 || depth == 0)
-         {
-             masterConfig[curr] = bcConfig[curr];
-         }
-         else
-         {
-             GU.mergeConfig(bcConfig[curr], masterConfig[curr], depth - 1);
-         }
-     }
-  },
+ mergeConfig: function(bcConfig, masterConfig, depth) {
+    var bcKeys = Object.keys(bcConfig);
+    var msKeys = Object.keys(masterConfig);
+    for (var i = 0; i < bcKeys.length; ++i)
+    {
+        var curr = bcKeys[i];
+        if (msKeys.indexOf(curr) == -1 || depth == 0)
+        {
+            masterConfig[curr] = bcConfig[curr];
+        }
+        else
+        {
+            GU.mergeConfig(bcConfig[curr], masterConfig[curr], depth - 1);
+        }
+    }
+ },
 
   // Call the callback with the user as a parameter, or null if the login failed.
  login: function(user, pass, cb) {
