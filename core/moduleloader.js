@@ -50,7 +50,10 @@ var moduleLoader = {
     Object.keys(moduleLoader.callback).forEach(function(cbName) {
         if (typeof module[cbName] == 'function')
         {
-            moduleLoader.callback[cbName].push(module[cbName]);
+            // Wrap all the callbacks so that they can be executed with
+            // the correct this context.
+            var cb = function() { return module[cbName].apply(module, arguments); };
+            moduleLoader.callback[cbName].push(cb);
             init = true;
         }
     });
