@@ -37,7 +37,7 @@ var GU = {
 
  manateeCallback: {
     OnSocketClose: function() {
-        console.log('Matanee socket is down.');
+        throw 'Matanee socket is down.';
     },
     OnChatMessageRcv: function(userid, msg) {
         var regexp = RegExp('^/([a-zA-Z]*)([ ]+(.+))?$');
@@ -68,7 +68,7 @@ var GU = {
         }
         if (userid != GU.user.userID)
         {
-            if (GU.modCallback.onChatMessageRcv.length)
+            if (GU.modCallback.onChatMessageRcv && GU.modCallback.onChatMessageRcv.length)
             {
                 var req = request.onCall(userid, GU.isFollowed, msg);
                 try {
@@ -80,7 +80,7 @@ var GU = {
         }
     },
     OnSongChange: function(oldSong, oldVote, newSong) {
-        if (GU.modCallback.onSongChange.length)
+        if (GU.modCallback.onSongChange && GU.modCallback.onSongChange.length)
         {
             var req = request.onSongChange(oldSong, oldVote, newSong);
             try {
@@ -91,7 +91,7 @@ var GU = {
         }
     },
     OnQueueChange: function() {
-        if (GU.modCallback.onQueueChange.length)
+        if (GU.modCallback.onQueueChange && GU.modCallback.onQueueChange.length)
         {
             var req = request.defaultConstructor();
             try {
@@ -102,7 +102,7 @@ var GU = {
         }
     },
     OnListenerJoin: function(userobj) {
-        if (GU.modCallback.onListenerJoin.length)
+        if (GU.modCallback.onListenerJoin && GU.modCallback.onListenerJoin.length)
         {
             var req = request.onUserAction(userobj);
             try {
@@ -113,7 +113,7 @@ var GU = {
         }
     },
     OnListenerLeave: function(userobj) {
-        if (GU.modCallback.onListenerLeave.length)
+        if (GU.modCallback.onListenerLeave && GU.modCallback.onListenerLeave.length)
         {
             var req = request.onUserAction(userobj);
             try {
@@ -124,7 +124,7 @@ var GU = {
         }
     },
     OnListenerVote: function(allVotes, userid, uservote) {
-        if (GU.modCallback.onListenerVote.length)
+        if (GU.modCallback.onListenerVote && GU.modCallback.onListenerVote.length)
         {
             var req = request.onListenerVote(allVotes, userid, uservote);
             try {
@@ -197,20 +197,32 @@ var GU = {
             console.log('Logged successfully as ' + userinfo.FName);
             GU.getFollowing();
             GU.isWhiteListed = obj.whiteList;
-            GU.mods = moduleloader.getList(obj.config.plugins_enabled, obj.config.plugins_conf);
-            GU.modCallback = moduleloader.getCallbackList(obj.config.plugins_enabled, obj.config.plugins_conf);
             GU.getLastBroadcast(function(lastBroadcast) {
+                if (!lastBroadcast)
+                {
+                    console.log("Error: The bot was unable to find your previous broadcast. Make sure to broadcast one time with your account before using the bot.");
+                    process.exit(0);
+                }
                 manatee.init(userinfo, GU.manateeCallback, function(boolres) {
                     manatee.broadcast(lastBroadcast, function(success){
                         if (success)
+                        {
+                            GU.mods = moduleloader.getList(obj.config.plugins_enabled, obj.config.plugins_conf);
+                            GU.modCallback = moduleloader.getCallbackList(obj.config.plugins_enabled, obj.config.plugins_conf);
                             console.log("We are now broadcasting!");
+                        }
                         else
                         {
                             console.log("Something wrong happened, please submit a bug report containing the logs.");
-                            process.exit(0);
+                            process.exit(1);
                         }
                     });
-                    GU.pingInterval = setInterval(function(){manatee.ping()}, 30000);
+                    GU.pingInterval = setInterval(function(){
+                        manatee.ping(function (message) {
+                            if (!message)
+                                throw 'Ping returned false. The session was probably lost...';
+                        });
+                    }, 30000);
                 });
             });
         }

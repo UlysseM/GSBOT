@@ -35,6 +35,7 @@ function Queue(manatee) {
     this.currentlyPlayingSong = false;
     // This counts the number of track we are currently adding (aka waiting for callback).
     this.addingTrack = 0;
+    this.playingTrack = 0;
     // This represents the queueTrackId of the last song added to the collection.
     this.lastCollectionQueueTrackId = -1;
 
@@ -229,6 +230,8 @@ Queue.prototype.addPlayedRecently = function(songid) {
 Queue.prototype.skip = function() {
     if (this.tracks.length <= 1)
         return false;
+    var that = this;
+    that.playingTrack += 1;
     this.manatee.pub({
         type:"data",
         value: {
@@ -257,6 +260,8 @@ Queue.prototype.skip = function() {
         }],
         async:false,
         persist:false
+    }, function() {
+        that.playingTrack -= 1;
     });
     return true;
 }
@@ -305,33 +310,32 @@ Queue.prototype.resetQueue = function(cb) {
 
 // Submit to the server the queue we have stored locally
 Queue.prototype.forcePlay = function(cb) {
-    if (this.tracks.length == 0)
-    {
-        console.log('Cannot force play if the queue is empty');
+    if (this.tracks.length == 0 || this.playingTrack > 0)
         return;
-    }
-    var manatee = this.manatee;
-    var channel = this.channel;
+    var that = this;
+    this.playingTrack += 1;
     var firstSongId = this.tracks[0].qid;
-    this.resetQueue(function() {
-        manatee.pub({
-            type:"data",
-            value: {
-                action:"playSong",
-                queueSongID: firstSongId,
-                country: manatee.gsConfig.country,
-                sourceID:1,
-                streamType:0,
-                position:0.0,
-                options:{},
-            },
-            subs: [{
-                type:"sub",
-                name: channel
-            }],
-            async:false,
-            persist:false
-        }, cb);
+    that.manatee.pub({
+        type:"data",
+        value: {
+            action:"playSong",
+            queueSongID: firstSongId,
+            country: that.manatee.gsConfig.country,
+            sourceID:1,
+            streamType:0,
+            position:0.0,
+            options:{},
+        },
+        subs: [{
+            type:"sub",
+            name: that.channel
+        }],
+        async:false,
+        persist:false
+    }, function(params) {
+        that.playingTrack -= 1;
+        if (typeof cb == 'function')
+            cb(params);
     });
 }
 
@@ -373,6 +377,12 @@ Queue.prototype.qClean = function(currentPlayingQueueId) {
         this.addPlayedRecently(this.tracks[0].id);
     console.log('LOCAL QUEUE STATUS: offset:' + this.offsetTrack + ', inside:');
     console.log(this.tracks);
+    // Sometimes, the queue gets REALLY long, preventing user to re suggest a song.
+    // This will flush the history after 10 plays.
+    if (this.offsetTrack >= 10)
+    {
+        this.resetQueue();
+    }
 }
 
 // Reset the current local queue

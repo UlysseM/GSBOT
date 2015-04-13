@@ -49,8 +49,7 @@ var grooveshark = {
             cb(tokenData);
         })
     }).on('error', function(e) {
-        console.log('ERROR while creating the session, please restart the bot.', e.message);
-        throw e;
+        throw 'Either Grooveshark is down or your connection is.';
     });
  },
 

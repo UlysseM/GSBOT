@@ -291,10 +291,6 @@ var manatee = {
                     msg.value.songs.forEach(function(song) {
                         manatee.getQueue().qAdd(song.b.sID, song.queueSongID, addPos++, song.b.sN, song.b.arN, song.b.alN);
                     });
-                    if (!manatee.getQueue().currentlyPlayingSong)
-                    {
-                        manatee.getQueue().forcePlay();
-                    }
                 }
                 else if (msg.value.type == 'remove')
                 {
@@ -329,6 +325,9 @@ var manatee = {
                 if (msg.value.response && msg.value.response.songs)
                     manatee.getQueue().qAddSongs(msg.value.response.songs);
                 break;
+            case 'setupQueueSuccess':
+                manatee.getQueue().playRandom();
+                break;
             case 'approveSuggestion':
             case 'rejectSuggestion':
                 if (msg.value.songID && msg.id.userid)
@@ -357,6 +356,10 @@ var manatee = {
     case "subinfo_change":
         if (msg.params && msg.params.s)
         {
+            if (msg.params.s.status == 0)
+            {
+                manatee.getQueue().forcePlay();
+            }
             if (msg.params.s.active)
             {
                 manatee.getQueue().qClean(msg.params.s.active.queueSongID);
@@ -370,7 +373,6 @@ var manatee = {
             }
             if (msg.params.s.next == null)
             {
-                console.log("NEXT IS NULL! Adding track for smooth transition.");
                 manatee.getQueue().playRandom();
             }
             if (msg.params.sgc)
