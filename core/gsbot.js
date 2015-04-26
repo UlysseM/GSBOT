@@ -204,9 +204,11 @@ var GU = {
                     process.exit(0);
                 }
                 manatee.init(userinfo, GU.manateeCallback, function(boolres) {
+                var notStarted = true;
                     manatee.broadcast(lastBroadcast, function(success){
-                        if (success)
+                        if (success && notStarted)
                         {
+                            notStarted = false;
                             GU.mods = moduleloader.getList(obj.config.plugins_enabled, obj.config.plugins_conf);
                             GU.modCallback = moduleloader.getCallbackList(obj.config.plugins_enabled, obj.config.plugins_conf);
                             console.log("We are now broadcasting!");

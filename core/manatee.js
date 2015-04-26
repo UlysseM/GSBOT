@@ -700,7 +700,7 @@ var manatee = {
                     for (var i = 0; i < ret[0].params.h.s.length; ++i)
                         manatee.getQueue().pushAvailableQueueTrackId(ret[0].params.h.s[i].queueSongID);
                 }
-                if (ret[0].params.s.active)
+                if (ret[0].params.s && ret[0].params.s.active)
                 {
                     manatee.getQueue().currentQueueTrackId = ret[0].params.s.active.queueSongID;
                 }

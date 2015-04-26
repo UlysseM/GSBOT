@@ -6,15 +6,18 @@ var findInQueue = {
     permission: ['guest'],
     maxDisplay: 10
  },
- onCall: function(request) {
-    var regex = RegExp(request.params, 'i');
+ getMatch: function(req) {
+    var regex = RegExp(req.params, 'i');
     var list = [];
 
-    request.getTracksInQueue().forEach(function(track){
+    req.getTracksInQueue().forEach(function(track){
         if (regex.test(track.alN) || regex.test(track.sN))
             list.push(track);
     });
-
+    return list;
+ },
+ onCall: function(request) {
+    var list = this.getMatch(request);
     var str = 'Song matched: ';
     if (list.length == 0 || list.length > findInQueue.config.maxDisplay)
     {

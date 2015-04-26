@@ -377,12 +377,13 @@ Queue.prototype.qClean = function(currentPlayingQueueId) {
         this.addPlayedRecently(this.tracks[0].id);
     console.log('LOCAL QUEUE STATUS: offset:' + this.offsetTrack + ', inside:');
     console.log(this.tracks);
-    // Sometimes, the queue gets REALLY long, preventing user to re suggest a song.
-    // This will flush the history after 10 plays.
-    if (this.offsetTrack >= 10)
-    {
-        this.resetQueue();
-    }
+    // The backlog can reach up to 1000 songs (http://sharkcommunity.com/viewtopic.php?f=2&t=210).
+    // We don't care having a huge backlog, so this will clear it completely if it contains 10 track.
+    // TEMPORARILY DISABLED as resetQueue is causing an issue (see https://github.com/UlysseM/GSBOT/issues/56)
+    // if (this.offsetTrack >= 10)
+    // {
+    //     this.resetQueue();
+    // }
 }
 
 // Reset the current local queue

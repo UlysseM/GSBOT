@@ -108,8 +108,11 @@ var moduleLoader = {
         if (plugins_enabled.indexOf(pluginName) != -1) // loading this plugin
         {
             var plugin = plugins[pluginName];
+            var neighbors = {};
             var sharedObject = {};
             Object.keys(plugin).forEach(function(moduleName) { // loading all the module in this plugin
+                plugin[moduleName].neighbors = neighbors;
+                neighbors[moduleName] = plugin[moduleName];
                 moduleLoader.loadModule(plugin[moduleName], plugins_conf[pluginName] ? plugins_conf[pluginName][moduleName] : undefined, sharedObject);
             });
         }

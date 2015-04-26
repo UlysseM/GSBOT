@@ -6,13 +6,7 @@ var removeByName = {
     permission: ['guest'],
  },
  onCall: function(request) {
-    var regex = RegExp(request.params, 'i');
-    var list = [];
-
-    request.getTracksInQueue().forEach(function(track){
-        if (regex.test(track.alN) || regex.test(track.sN))
-            list.push(track.qid);
-    });
+    var list = this.neighbors.findInQueue.getMatch(request);
 
     request.removeSongsFromQueue(list);
     var str = 'Song removed: ' + list.length;
