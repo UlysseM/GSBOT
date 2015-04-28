@@ -157,20 +157,18 @@ Queue.prototype.addSongs = function(songsid, cb) {
 }
 
 Queue.prototype.shuffle = function(cb) {
-    if (this.tracks.length == 0)
-        return;
-
-    var m = this.tracks.length - 1, t, i;
-    // While there remain elements to shuffle…
-    while (m) {
-        // Pick a remaining element…
-        i = Math.floor(Math.random() * m--);
-        // And swap it with the current element.
-        t = this.tracks[m + 1];
-        this.tracks[m + 1] = this.tracks[i + 1];
-        this.tracks[i + 1] = t;
-    }
-    this.resetQueue(cb);
+    this.manatee.pub({
+        type:"data",
+        value: {
+            action: 'shuffleUnplayedSongs'
+        },
+        subs: [{
+            type:"sub",
+            name: this.channel
+        }],
+        async:false,
+        persist:false
+    }, cb);
 }
 
 // Ask server to remove song in the array
@@ -379,11 +377,10 @@ Queue.prototype.qClean = function(currentPlayingQueueId) {
     console.log(this.tracks);
     // The backlog can reach up to 1000 songs (http://sharkcommunity.com/viewtopic.php?f=2&t=210).
     // We don't care having a huge backlog, so this will clear it completely if it contains 10 track.
-    // TEMPORARILY DISABLED as resetQueue is causing an issue (see https://github.com/UlysseM/GSBOT/issues/56)
-    // if (this.offsetTrack >= 10)
-    // {
-    //     this.resetQueue();
-    // }
+    if (this.offsetTrack >= 10)
+    {
+        this.resetQueue();
+    }
 }
 
 // Reset the current local queue

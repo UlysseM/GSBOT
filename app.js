@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-GLOBAL.GSBOTVERSION = '2.0.18-RC_2';
+GLOBAL.GSBOTVERSION = '2.0.19-RC_2';
 
 var child_process = require('child_process');
 

@@ -682,6 +682,8 @@ var manatee = {
  },
 
  broadcast: function(lastBroadcast, cb) {
+    // If we don't confirm the broadcast within 10 seconds, kill the BC and restarts it.
+    setTimeout(function(){cb(false)}, 10000);
     manatee.broadcastDesc = lastBroadcast.Description;
     manatee.get({keys:["s"],userid:manatee.userInfo.userID}, function(res) {
         if (res.values && res.values[0] && res.values[0].bcastOwner == 1)

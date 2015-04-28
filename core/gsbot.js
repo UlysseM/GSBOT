@@ -213,7 +213,7 @@ var GU = {
                             GU.modCallback = moduleloader.getCallbackList(obj.config.plugins_enabled, obj.config.plugins_conf);
                             console.log("We are now broadcasting!");
                         }
-                        else
+                        else if (notStarted)
                         {
                             console.log("Something wrong happened, please submit a bug report containing the logs.");
                             process.exit(1);
